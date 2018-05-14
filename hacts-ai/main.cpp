@@ -2,6 +2,6 @@
 
 int main() {
 	std::cout << "asdtest\n";
-    std::cout << "okon xd" << std::endl;
+    std::cout << "okon v2 xd" << std::endl;
 	return 0;
 }
