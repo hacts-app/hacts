@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     process = new QProcess(this);
+
 #ifdef Q_OS_WIN
     process->start("../hacts-ai/hacts-ai.exe");
 #else
