@@ -8,5 +8,9 @@ TARGET = hacts-ai
 TEMPLATE = app
 
 SOURCES += \
-        main.cpp
+        main.cpp \
+    lib.cpp
+
+HEADERS += \
+    lib.h
 
