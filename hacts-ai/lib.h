@@ -2,20 +2,32 @@
 
 using namespace std;
 
+#define PI 3.14159265
+
 class Car
 {
 public:
-	double velocity;
-	double max_velocity;
-	double acceleration;
-	int mass;
-	double max_transfer;
-	int torque;
-	double radius;
+    double velocity;
+    double max_velocity;
+    double acceleration;
+    int mass;
+    double max_transfer;
+    int torque;
+    double radius;
+    double angle;
+    int x,y;
 
 public:
-	Car(int m, double t, int tor, double r, double mv); // masa, ,max moment silnika, prze³o¿enie, promien ko³a, max prêdkoœæ
+    Car(int m, double t, int tor, double r, double mv, double ang, int _x, int _y);
+    // masa, ,max moment silnika, przeÅ‚oÅ¼enie, promien koÅ‚a, max prÄ™dkoÅ›Ä‡
 
-	void onPushGas(double trans); // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
+    void onGasPush(double trans);
+    // trans od 0.00 do 1 to % wciÅ›niÄ™cia gazu ... zakÅ‚adamy Å¼e aktywowane co sekunde
+
+       void onBrakePush(double per);
+       // tak jak w gazie
+
+       void ChangePos();
+        // zmiana pozycji
 
 };
