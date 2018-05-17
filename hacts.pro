@@ -4,4 +4,5 @@ TARGET = hacts
 
 SUBDIRS = \
     hacts-ai \
-    hacts-gui
+    hacts-gui \
+    hacts-createmap

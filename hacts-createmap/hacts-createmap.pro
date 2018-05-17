@@ -6,6 +6,8 @@
 
 QT += core
 
+CONFIG += c++11
+
 TARGET = hacts-createmap
 TEMPLATE = app
 
