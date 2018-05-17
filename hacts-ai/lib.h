@@ -1,8 +1,15 @@
 #include <iostream>
+#include <ctime>
 
 using namespace std;
 
 #define PI 3.14159265
+
+clock_t delta_t(clock_t &bef);
+
+double radToDeg(double rad);
+
+double degToRad(double deg);
 
 class Car
 {
@@ -15,19 +22,26 @@ public:
     int torque;
     double radius;
     double angle;
+    double wheelAng;
     int x,y;
+    double length;
 
 public:
-    Car(int m, double t, int tor, double r, double mv, double ang, int _x, int _y);
-    // masa, ,max moment silnika, przełożenie, promien koła, max prędkość
+    Car(int m, double t, int tor, double r, double mv, double ang, int _x, int _y, double len);
+    // masa, ,max moment silnika, prze³o¿enie, promien ko³a, max prêdkoœæ
 
     void onGasPush(double trans);
-    // trans od 0.00 do 1 to % wciśnięcia gazu ... zakładamy że aktywowane co sekunde
+    // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
 
        void onBrakePush(double per);
        // tak jak w gazie
 
-       void ChangePos();
-        // zmiana pozycji
+       void changeWheelAng(double intensity);
+       // od -1 do 1 .. ujemne skrecają w prawo dodatnie w lewo
+
+       void showPos();
+
+       void changePos();
+        // zmiana pozycji i KĄTA
 
 };

@@ -1,52 +1,37 @@
 #include <iostream>
 #include "lib.h"
 
+
 using namespace std;
+
+clock_t bef;
 
 int main()
 {
-    Car golf3(1300, 350, 3.23, 0.315, 60, 30, 0, 0);
-    Car tesla(1220, 370, 8.28, 0.315, 111, 280, 0, 0);
+       bef = clock();
+        Car golf3(1300, 350, 3.23, 0.315, 60, 0, 0, 0, 2);
+    int i = 200;
 
-    cout << "testy golf 3 vs tesla roadster"<<endl<<endl;
+    golf3.changeWheelAng(1);
+    golf3.changeWheelAng(1); // w sumie do 30 stopni
 
-    int i = 0;
+    golf3.onGasPush(0.5);
+    golf3.onGasPush(0.5);
+    golf3.onGasPush(0.5);
 
-       for(; i <25; i++)
+    while(i--)
        {
-              golf3.onGasPush(0.5);
-              tesla.onGasPush(0.2);
 
-              golf3.ChangePos();
-              tesla.ChangePos();
 
-              cout << i +1<<" sekunda\n\t golf: "<<golf3.velocity<<" m/s ";
-              cout<<",tesla: "<<tesla.velocity<<" m/s."<<endl;
+              golf3.changePos();
 
-              cout << "\t Pozycja golfa: ("<<golf3.x << ", " << golf3.y << ")"<<endl;
-              cout << "\t Pozycja tesli: ("<<tesla.x << ", " << tesla.y << ")"<<endl;
-       }
-       i = 0;
+              cout << 200 - i << " sekunda : ";
 
-       cout << endl  << "\t\tHAMOWANIE" << endl << endl;
+              golf3.showPos();
 
-       while(golf3.velocity > 0 || tesla.velocity > 0)
-       {
-              golf3.onBrakePush(1);
-              tesla.onBrakePush(1);
-
-              golf3.ChangePos();
-              tesla.ChangePos();
-
-              cout << i +1<<" sekunda\n\t golf: "<<golf3.velocity<<" m/s ";
-              cout<<",tesla: "<<tesla.velocity<<" m/s."<<endl;
-
-              cout << "\t Pozycja golfa: ("<<golf3.x << ", " << golf3.y << ")"<<endl;
-              cout << "\t Pozycja tesli: ("<<tesla.x << ", " << tesla.y << ")"<<endl;
-
-              i++;
+              cout <<"  kat = " << golf3.angle<<endl;
        }
 
 
-    return 0;
+       return 0;
 }
