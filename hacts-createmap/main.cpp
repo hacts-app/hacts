@@ -1,11 +1,10 @@
-#include <iostream>
-
 #include <QObject>
 #include <QFile>
 #include <QTextStream>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QMap>
+#include <QtMath>
 
 #include <QDebug>
 
@@ -19,7 +18,8 @@ struct Way {
     QVector<qint64> nodes;
 };
 
-static QMap<qint64, Node> nodes;
+static QMap<qint64, Node> highwayNodes;
+static QMap<qint64, Node> borderNodes;
 static QMap<qint64, Way> ways;
 
 static bool hasAllAttributes(QXmlStreamAttributes &attrs, const QStringList &names) {
@@ -39,7 +39,7 @@ static void readNode(QXmlStreamReader &reader) {
     Node node;
     node.lat = attrs.value("lat").toDouble();
     node.lon = attrs.value("lon").toDouble();
-    nodes[attrs.value("id").toLongLong()] = node;
+    highwayNodes[attrs.value("id").toLongLong()] = node;
 
     reader.skipCurrentElement();
 }
@@ -62,7 +62,7 @@ static void readWay(QXmlStreamReader &reader) {
     while(reader.readNextStartElement()) {
         QXmlStreamAttributes attrs = reader.attributes();
 
-        // ensure the way is a highway
+        // parse <tag k="highway" v=".." /> and ensure the way is a highway
         if(reader.name() == "tag" && attrs.value("k").toString() == "highway") {
             QString highwayType = attrs.value("v").toString();
 
@@ -70,11 +70,14 @@ static void readWay(QXmlStreamReader &reader) {
             if(highwayType != "footway"
                     && highwayType != "cycleway"
                     && highwayType != "bridleway"
+                    && highwayType != "pedestrian"
+                    && highwayType != "steps"
                     && highwayType != "path")
             {
                 isDriveableByCar = true;
                 way.highwayType = highwayType;
             }
+        // parse <nd ref=".." />
         } else if(reader.name() == "nd") {
             qint64 nodeId = reader.attributes().value("ref").toLongLong();
             way.nodes.append(nodeId);
@@ -119,28 +122,66 @@ static void removeNodesNotPresentInWays() {
     }
 
     // filter nodes so that only ones present in nodesInAHighway stay
-    for (auto it = nodes.begin(); it != nodes.end(); ) {
+    for (auto it = highwayNodes.begin(); it != highwayNodes.end(); ) {
         qint64 nodeId = it.key();
         if(nodesInAHighway.contains(nodeId)) {
             ++it;
         } else {
-            it = nodes.erase(it);
+            it = highwayNodes.erase(it);
         }
     }
 }
 
-static void addNodes() {
+static qint64 addBorderNode(const double lat, const double lon) {
+    if(qIsNaN(lat) || qIsNaN(lon))
+        return;
 
+    static qint64 nodeId = -1;
+    borderNodes[nodeId] = {lat, lon};
+    nodeId -= 1;
+}
+
+static qint64 addSomething(Node a, Node b) {
+    double angle = qAtan2(a.lon - b.lon, a.lat - b.lat);
+
+    // make the angle for a line perpendicular to |AB|
+    angle += M_PI/2.0;
+
+    double roadHeight = 0.00014;
+    double roadWidth = 0.00009;
+
+    addBorderNode(a.lat + qCos(angle) * roadWidth, a.lon + qSin(angle) * roadHeight);
+    addBorderNode(a.lat - qCos(angle) * roadWidth, a.lon - qSin(angle) * roadHeight);
+
+    addBorderNode(b.lat + qCos(angle) * roadWidth, b.lon + qSin(angle) * roadHeight);
+    addBorderNode(b.lat - qCos(angle) * roadWidth, b.lon - qSin(angle) * roadHeight);
+}
+
+static void addNodes() {
+    for(const Way &way : ways) {
+        // iterate for every element but first
+        for(int i = 1; i < way.nodes.length(); i++) {
+            addSomething( highwayNodes.value(way.nodes.value(i - 1)), highwayNodes.value(way.nodes.value(i)) );
+        }
+    }
 }
 
 static void outputData(QFile &file) {
     QTextStream out(&file);
 
+    // Coordinates need higher precision than the default 6
+    out.setRealNumberPrecision(12);
+
     out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     out << "<osm version=\"0.6\" generator=\"hacts-createmap\">\n";
 
-    for(auto key : nodes.keys()) {
-        const Node &node = nodes[key];
+    for(auto key : highwayNodes.keys()) {
+        const Node &node = highwayNodes[key];
+        out << "  <node id=\"" << key << "\" lat=\"" << node.lat << "\" lon=\"" << node.lon << "\" version=\"1\" />\n";
+    }
+
+    for(auto key : borderNodes.keys()) {
+        const Node &node = borderNodes[key];
         out << "  <node id=\"" << key << "\" lat=\"" << node.lat << "\" lon=\"" << node.lon << "\" version=\"1\" />\n";
     }
 
