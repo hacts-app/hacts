@@ -7,7 +7,7 @@ clock_t befPos;
 clock_t befAct;
 
 const int test_time =  50;
-const string path = "data.txt";
+string path = "data.txt";
 
 void pokaz(Car autko, int &i)
 {

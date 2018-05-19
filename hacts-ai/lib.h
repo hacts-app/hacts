@@ -39,7 +39,7 @@ inline void split(const string &s, char delim, Out result);
 
 vector<string> split(const string &s, char delim);
 
-vector<Way> setWay(const string path);
+vector<Way> setWay(string path);
 
 class Car
 {

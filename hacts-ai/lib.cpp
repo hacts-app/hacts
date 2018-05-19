@@ -69,9 +69,9 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     return -1;
 }
 
-vector<Way> setWay(const string path)
+vector<Way> setWay(string path)
 {
-    ifstream coord("data.txt");
+    ifstream coord(path);
     string medium;
     vector<string> tmp;
     vector<Way> lines;
@@ -81,11 +81,9 @@ vector<Way> setWay(const string path)
     {
         tmp = split(medium, ',');
 
-        lines.resize(lines.size()+1);
-
-        for(int j = 0; j < tmp.size(); j++)
+        for(unsigned int j = 0; j < tmp.size(); j++)
         {
-            lines[a].points.push_back(new(stod(tmp[2 * j]), stod(tmp[2 * j + 1])));
+            lines[a].points.push_back(new Node{stod(tmp[2 * j]), stod(tmp[2 * j + 1])});
         }
         a++;
     }
