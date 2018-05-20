@@ -1,26 +1,65 @@
 #include <QObject>
+#include <QSet>
+#include <QMap>
+#include <QMultiMap>
+#include <QtMath>
 #include <QFile>
 #include <QTextStream>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QMap>
-#include <QtMath>
+#include <QGeoCoordinate>
 
 #include <QDebug>
 
+#define SECTOR_WIDTH 30 // meters
+#define SECTOR_HEIGHT 30 // meters
+
+enum class OneWay { No, Yes, YesReverse };
+
 struct Node {
-    double lat;
-    double lon;
+    double x;
+    double y;
 };
 
 struct Way {
     QString highwayType;
+    OneWay oneWay = OneWay::NO;
     QVector<qint64> nodes;
+};
+
+struct OutputWay {
+    QVector<qint64> nodes;
+    QSet<qint64> sectors;
 };
 
 static QMap<qint64, Node> highwayNodes;
 static QMap<qint64, Node> borderNodes;
 static QMap<qint64, Way> ways;
+static QMultiMap<qint64, OutputWay*> sectors;
+static QVector<OutputWay*> outputWays;
+
+static struct {
+   double minlat = 0, minlon = 0, maxlat = 0, maxlon = 0;
+   double width = 0, height = 0; // in meters
+
+   // how many sectors does the map have
+   int sectors_horizontal = 0, sectors_vertical = 0;
+} bounds;
+
+static qint64 getSector(const Node &node) {
+    return qFloor(bounds.height - node.x) % SECTOR_WIDTH + (qFloor(node.y) % SECTOR_HEIGHT) * bounds.sectors_horizontal;
+}
+
+// converts coordinates from geographical to cartesian when importing OSM data
+static Node latLonToCartesian(double lat, double lon) {
+    const double latwidth = bounds.maxlat - bounds.minlat;
+    const double lonheight = bounds.maxlon - bounds.minlon;
+
+    Node node;
+    node.x = (lat - bounds.minlat) * bounds.width / latwidth;
+    node.y = (lon - bounds.minlon) * bounds.height / lonheight;
+    return node;
+}
 
 static bool hasAllAttributes(QXmlStreamAttributes &attrs, const QStringList &names) {
     foreach(QString name, names) {
@@ -36,10 +75,10 @@ static void readNode(QXmlStreamReader &reader) {
     if(! hasAllAttributes(attrs, {"lat", "lon", "id"}))
         return;
 
-    Node node;
-    node.lat = attrs.value("lat").toDouble();
-    node.lon = attrs.value("lon").toDouble();
-    highwayNodes[attrs.value("id").toLongLong()] = node;
+    double lat = attrs.value("lat").toDouble();
+    double lon = attrs.value("lon").toDouble();
+
+    highwayNodes[attrs.value("id").toLongLong()] = latLonToCartesian(lat, lon);
 
     reader.skipCurrentElement();
 }
@@ -92,6 +131,28 @@ static void readWay(QXmlStreamReader &reader) {
     ways[attrs.value("id").toLongLong()] = way;
 }
 
+// Read and process <bounds minlat=".." maxlat=".." maxlon=".." minlon=".." />
+static void readBounds(QXmlStreamReader &reader) {
+    const QXmlStreamAttributes attrs = reader.attributes();
+
+    bounds.maxlat = attrs.value("maxlat").toDouble();
+    bounds.minlat = attrs.value("minlat").toDouble();
+    bounds.maxlon = attrs.value("maxlon").toDouble();
+    bounds.minlon = attrs.value("minlon").toDouble();
+
+    QGeoCoordinate topLeft(bounds.minlat, bounds.minlon);
+    QGeoCoordinate topRight(bounds.maxlat, bounds.minlon);
+    QGeoCoordinate bottomLeft(bounds.maxlat, bounds.minlon);
+
+    bounds.width = topLeft.distanceTo(topRight);
+    bounds.height = topLeft.distanceTo(bottomLeft);
+
+    bounds.sectors_horizontal = bounds.width / SECTOR_WIDTH + 1;
+    bounds.sectors_vertical = bounds.height / SECTOR_HEIGHT + 1;
+
+    reader.skipCurrentElement(); // <bounds /> never has anything inside
+}
+
 static void readMap(QXmlStreamReader &reader) {
 
     // ensure that the file starts with <osm ...> and enter this tag
@@ -106,6 +167,8 @@ static void readMap(QXmlStreamReader &reader) {
             readNode(reader);
         } else if(reader.name() == "way") {
             readWay(reader);
+        } else if(reader.name() == "bounds") {
+            readBounds(reader);
         } else {
             reader.skipCurrentElement();
         }
@@ -132,41 +195,56 @@ static void removeNodesNotPresentInWays() {
     }
 }
 
-static qint64 addBorderNode(const double lat, const double lon) {
-    if(qIsNaN(lat) || qIsNaN(lon))
+static void addBorderNode(OutputWay *outputWay, const double x, const double y) {
+    if(qIsNaN(x) || qIsNaN(y)) // TODO: why is this NaN sometimes?
         return;
 
     static qint64 nodeId = -1;
-    borderNodes[nodeId] = {lat, lon};
+    borderNodes[nodeId] = {x, y};
+
+    qint64 sectorId = getSector(borderNodes[nodeId]);
+    outputWay->nodes.append(nodeId);
+    outputWay->sectors |= sectorId;
+    if(! sectors.contains(sectorId, outputWay))
+        sectors.insert(sectorId, outputWay);
+
     nodeId -= 1;
 }
 
-static qint64 addSomething(Node a, Node b) {
-    double angle = qAtan2(a.lon - b.lon, a.lat - b.lat);
+static void addBorderNodes(Node node, double angle, OutputWay *left, OutputWay *right) {
+    double roadWidth = 4; // meters
+
+    addBorderNode(left, node.x + qSin(angle) * roadWidth, node.y + qCos(angle) * roadWidth);
+    addBorderNode(right, node.x - qSin(angle) * roadWidth, node.y - qCos(angle) * roadWidth);
+}
+
+static void addSomething(Node a, Node b, OutputWay *left, OutputWay *right) {
+    double angle = qAtan2(a.x - b.x, a.y - b.y);
 
     // make the angle for a line perpendicular to |AB|
     angle += M_PI/2.0;
 
-    double roadHeight = 0.00014;
-    double roadWidth = 0.00009;
+    Node halfway { (a.x + b.x) / 2, (a.y + b.y) / 2 };
 
-    addBorderNode(a.lat + qCos(angle) * roadWidth, a.lon + qSin(angle) * roadHeight);
-    addBorderNode(a.lat - qCos(angle) * roadWidth, a.lon - qSin(angle) * roadHeight);
-
-    addBorderNode(b.lat + qCos(angle) * roadWidth, b.lon + qSin(angle) * roadHeight);
-    addBorderNode(b.lat - qCos(angle) * roadWidth, b.lon - qSin(angle) * roadHeight);
+    addBorderNodes(a, angle, left, right);
+    addBorderNodes(b, angle, left, right);
+    addBorderNodes(halfway, angle, left, right);
 }
 
-static void addNodes() {
+static void addNodesToHighway() {
     for(const Way &way : ways) {
+        OutputWay *left = new OutputWay();
+        OutputWay *right = new OutputWay();
+        outputWays << left << right;
+
         // iterate for every element but first
         for(int i = 1; i < way.nodes.length(); i++) {
-            addSomething( highwayNodes.value(way.nodes.value(i - 1)), highwayNodes.value(way.nodes.value(i)) );
+            addSomething(highwayNodes.value(way.nodes.value(i - 1)), highwayNodes.value(way.nodes.value(i)), left, right);
         }
     }
 }
 
-static void outputData(QFile &file) {
+static void outputDataOSM(QFile &file) {
     QTextStream out(&file);
 
     // Coordinates need higher precision than the default 6
@@ -176,25 +254,52 @@ static void outputData(QFile &file) {
     out << "<osm version=\"0.6\" generator=\"hacts-createmap\">\n";
 
     for(auto key : highwayNodes.keys()) {
-        const Node &node = highwayNodes[key];
-        out << "  <node id=\"" << key << "\" lat=\"" << node.lat << "\" lon=\"" << node.lon << "\" version=\"1\" />\n";
+        Node node = highwayNodes[key];
+        node.x /= bounds.width; node.x += 19;
+        node.y /= bounds.height; node.y += 50;
+        out << "  <node id=\"" << key << "\" lat=\"" << node.x << "\" lon=\"" << node.y << "\" version=\"1\" />\n";
     }
 
     for(auto key : borderNodes.keys()) {
-        const Node &node = borderNodes[key];
-        out << "  <node id=\"" << key << "\" lat=\"" << node.lat << "\" lon=\"" << node.lon << "\" version=\"1\" />\n";
+        Node node = borderNodes[key];
+        node.x /= bounds.width; node.x += 19;
+        node.y /= bounds.height; node.y += 50;
+        out << "  <node id=\"" << key << "\" lat=\"" << node.x << "\" lon=\"" << node.y << "\" version=\"1\" />\n";
     }
 
     for(auto key : ways.keys()) {
         const Way &way = ways[key];
         out << "  <way id=\"" << key << "\" version=\"1\">\n";
         out << "    <tag k=\"highway\" v=\"" << way.highwayType << "\" />\n";
-        for(auto node : way.nodes)
-            out << "    <nd ref=\"" << node << "\" />\n";
+        for(auto nodeId : way.nodes)
+            out << "    <nd ref=\"" << nodeId << "\" />\n";
+        out << "  </way>\n";
+    }
+
+    qint64 wayId = -10000000;
+    for(OutputWay *way : outputWays) {
+        out << "  <way id=\"" << wayId++ << "\" version=\"1\">\n";
+        out << "    <tag k=\"highway\" v=\"track\" />\n";
+        for(auto nodeId : way->nodes)
+            out << "    <nd ref=\"" << nodeId << "\" />\n";
         out << "  </way>\n";
     }
 
     out << "</osm>\n";
+}
+
+static void outputDataHACTS(QFile &file) {
+    QTextStream out(&file);
+    out.setRealNumberPrecision(12);
+
+    out << "hacts map file v1\n";
+    out << "width_meters=" << bounds.width << "\n";
+    out << "height_meters=" << bounds.height << "\n";
+    out << "width_sectors=" << bounds.sectors_horizontal << "\n";
+    out << "height_sectors=" << bounds.sectors_vertical << "\n";
+    out << "\n";
+
+    // output ways
 }
 
 int main(int argc, char *argv[]) {
@@ -203,7 +308,7 @@ int main(int argc, char *argv[]) {
     argc = 3;
 
     if(argc != 3) {
-        cerr << "Usage: " << argv[0] << " <source map> <output map>\n"
+        cerr << "Usage " << argv[0] << " <source map> <output map>\n"
             << "    This program adds lane and other information into OSM maps for\n"
             << "    transport simulation purpouses.\n";
     }
@@ -224,7 +329,7 @@ int main(int argc, char *argv[]) {
 
     removeNodesNotPresentInWays();
 
-    addNodes();
+    addNodesToHighway();
 
 
     QFile output("/home/karol/projects/hacts/hacts-createmap/potok.output.osm");
@@ -232,7 +337,7 @@ int main(int argc, char *argv[]) {
         cerr << "Failed to open " << argv[2] << " for writing: " << output.errorString() << "\n";
         return 1;
     }
-    outputData(output);
+    outputDataOSM(output);
 
     if(output.error() != QFile::NoError) {
         cerr << "Failed writing to " << argv[2] << ": " << output.errorString() << "\n";
