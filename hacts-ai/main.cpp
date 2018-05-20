@@ -22,7 +22,9 @@ void pokaz(Car autko, int &i)
 
 int main()
 {
-    //vector<Way> ways = setWay(path);
+    map<int,vector<Way*>> sectors;
+
+    setWay(sectors, path);
 
     befPos = clock();
     befAct = clock();

@@ -9,21 +9,15 @@
 #include <iterator>
 #include <fstream>
 #include <string>
+#include <map>
 
 using namespace std;
 
 #define PI 3.14159265
 
-struct Node
-{
-    double x;
-    double y;
-};
-
-struct Way
-{
-    vector<Node*> points;
-};
+class Car;
+struct Node;
+struct Way;
 
 clock_t delta_t(clock_t &bef);
 
@@ -39,7 +33,12 @@ inline void split(const string &s, char delim, Out result);
 
 vector<string> split(const string &s, char delim);
 
-vector<Way> setWay(string path);
+template<typename T>
+void push_back2(vector<T> &v, T &elem1, T &elem2);
+
+void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin);
+
+void setWay(map<int,vector<Way*>> &sec, string path);
 
 class Car
 {
@@ -78,4 +77,13 @@ public:
 
 };
 
+struct Node
+{
+    double x;
+    double y;
+};
 
+struct Way
+{
+    vector<Node*> points;
+};

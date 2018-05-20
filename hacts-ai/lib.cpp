@@ -41,6 +41,12 @@ vector<string> split(const string &s, char delim)
 
     return elems;
 }
+template<typename T>
+void push_back2(vector<T> &v, T &elem1, T &elem2)
+{
+    v.push_back(&elem1);
+    v.push_back(&elem2);
+}
 
 double dist(double ang, double xG, double yG, double xA, double yA, double xB, double yB)
 {
@@ -69,7 +75,45 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     return -1;
 }
 
-vector<Way> setWay(string path)
+void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin)
+{
+    for(int i = 0; i < lin.size(); i++)
+    {
+        vector<int> numOfSec;
+
+        for(int j = 0; j < lin[i].points.size(); j++)
+        {
+            int numX = ceil((lin[i].points[j]->x)/30);
+
+            int numY = ceil((lin[i].points[j]->y)/30);
+
+            numOfSec.push_back((numY-1)*100 + numX);
+        }
+
+        sec[numOfSec[0]].push_back(new Way{vector<Node*>{new Node{lin[i].points[0]->x, lin[i].points[0]->y}}});
+                                                    //points
+        for(int j = 1; j < numOfSec.size(); j++)
+        {
+            if(numOfSec[j] == numOfSec[j-1])
+            {
+                sec[numOfSec[j]].back()->points.push_back(new Node{lin[i].points[j]->x, lin[i].points[j]->y});
+            }
+            else
+            {
+                // dodajemy wczesniejszy punkt ze starego sektora do nowego
+                sec[numOfSec[j]].push_back(new Way{vector<Node*>{new Node{lin[i].points[j-1]->x, lin[i].points[j-1]->y}}});
+
+                // dodajemy nowy punkt do nowego sektora
+                sec[numOfSec[j]].back()->points.push_back(new Node{lin[i].points[j]->x, lin[i].points[j]->y});
+
+                // dodajemy nowy punkt do starego sektora
+                sec[numOfSec[j-1]].back()->points.push_back(new Node{lin[i].points[j]->x, lin[i].points[j]->y});
+            }
+        }	// for j v2
+    }	// for i
+}
+
+void setWay(map<int,vector<Way*>> &sec, string path)
 {
     ifstream coord(path);
     string medium;
@@ -87,7 +131,7 @@ vector<Way> setWay(string path)
         }
         a++;
     }
-    return lines;
+    setSectors(sec, lines);
 }
 
 Car::Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len)
