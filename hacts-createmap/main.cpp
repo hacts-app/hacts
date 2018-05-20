@@ -23,7 +23,7 @@ struct Node {
 
 struct Way {
     QString highwayType;
-    OneWay oneWay = OneWay::NO;
+    OneWay oneWay = OneWay::No;
     QVector<qint64> nodes;
 };
 
@@ -67,6 +67,20 @@ static bool hasAllAttributes(QXmlStreamAttributes &attrs, const QStringList &nam
             return false;
     }
     return true;
+}
+
+
+// Returns an angle ABC
+//
+// https://stackoverflow.com/a/3487062/3105260
+static bool angleBetweenNodes(const Node &a, const Node &b, const Node &c) {
+    Node ab { b.x - a.x, b.y - a.y };
+    Node cb { b.x - c.x, b.y - c.y };
+
+    double dot = (ab.x * cb.x + ab.y * cb.y);
+    double cross = (ab.x * cb.y - ab.y * cb.x);
+
+    return qAtan2(cross, dot);
 }
 
 // Read and process <node id=".." lat=".." lon=".." />
@@ -214,21 +228,21 @@ static void addBorderNode(OutputWay *outputWay, const double x, const double y) 
 static void addBorderNodes(Node node, double angle, OutputWay *left, OutputWay *right) {
     double roadWidth = 4; // meters
 
+    // make the angle be for a line perpendicular to |AB|
+    angle += M_PI/2.0;
+
     addBorderNode(left, node.x + qSin(angle) * roadWidth, node.y + qCos(angle) * roadWidth);
     addBorderNode(right, node.x - qSin(angle) * roadWidth, node.y - qCos(angle) * roadWidth);
 }
 
-static void addSomething(Node a, Node b, OutputWay *left, OutputWay *right) {
-    double angle = qAtan2(a.x - b.x, a.y - b.y);
-
-    // make the angle for a line perpendicular to |AB|
-    angle += M_PI/2.0;
+static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, OutputWay *left, OutputWay *right) {
+    double roadFragmentCartesianAngle = qAtan2(a.x - b.x, a.y - b.y);
 
     Node halfway { (a.x + b.x) / 2, (a.y + b.y) / 2 };
 
-    addBorderNodes(a, angle, left, right);
-    addBorderNodes(b, angle, left, right);
-    addBorderNodes(halfway, angle, left, right);
+    addBorderNodes(a, roadFragmentCartesianAngle, left, right);
+    addBorderNodes(halfway, roadFragmentCartesianAngle, left, right);
+    addBorderNodes(b, roadFragmentCartesianAngle, left, right);
 }
 
 static void addNodesToHighway() {
@@ -239,7 +253,18 @@ static void addNodesToHighway() {
 
         // iterate for every element but first
         for(int i = 1; i < way.nodes.length(); i++) {
-            addSomething(highwayNodes.value(way.nodes.value(i - 1)), highwayNodes.value(way.nodes.value(i)), left, right);
+            Node firstNode = highwayNodes.value(way.nodes.value(i - 1));
+            Node secondNode = highwayNodes.value(way.nodes.value(i));
+
+            Node *previousNode = nullptr;
+            if(i != 1)
+                previousNode = &highwayNodes[way.nodes.value(i - 2)];
+
+            Node *nextNode = nullptr;
+            if(i == way.nodes.length() - 1)
+                nextNode = &highwayNodes[way.nodes.value(way.nodes.value(i + 1))];
+
+            addBorderToTwoNodeWay(previousNode, firstNode, secondNode, nextNode, left, right);
         }
     }
 }
