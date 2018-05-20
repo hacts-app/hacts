@@ -54,9 +54,10 @@ public:
     double wheelAng;
     double x,y;
     double length;
+    double width;
 
 public:
-    Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len);
+    Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);
     // masa, ,max moment silnika, prze³o¿enie, promien ko³a, max prêdkoœæ
 
     void onGasPush(double trans, clock_t &bef);
@@ -70,7 +71,7 @@ public:
 
     void showPos();
 
-    vector<double> radar();
+    vector<double> radar(vector<Way*> &ways);
 
     void changePos(clock_t &bef);
         // zmiana pozycji i KĄTA

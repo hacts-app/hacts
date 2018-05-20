@@ -51,37 +51,37 @@ void push_back2(vector<T> &v, T &elem1, T &elem2)
 double dist(double ang, double xG, double yG, double xA, double yA, double xB, double yB)
 {
     // wyliczanie prostej przechodzacej przez A i B
-    float a = (yA - yB) / (xA - xB);
+    double a = (yA - yB) / (xA - xB);
 
-    float b = yA - a*xA;
+    double b = yA - a*xA;
 
     // wyliczanie prostej radarowej
-    float aG = tan(ang * PI / 180.0);
+    double aG = tan(ang * PI / 180.0);
 
-    float bG = yG - aG*xG;
+    double bG = yG - aG*xG;
 
     if(a == aG) // jezeli sa rownolegle nie maja punktow stcznosci
-        return -1;
+        return 60;
 
     // x stycznosci:
-    float x = (b - bG) / (aG - a);
+    double x = (b - bG) / (aG - a);
 
     // czy x należy do dziedziny
     if((x >= xA && x <=xB) || (x >= xB && x <=xA))
     {
-        return sqrt(pow((x - xG), 2) + pow((a*x + b - yG), 2));
+        return sqrt(pow((x - xG), 2) + pow((a*x + b - yG), 2)); // odleglosc auta od przeszkody
     }
 
-    return -1;
+    return 60; // max zasieg wzroku
 }
 
 void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin)
 {
-    for(int i = 0; i < lin.size(); i++)
+    for(unsigned int i = 0; i < lin.size(); i++)
     {
         vector<int> numOfSec;
 
-        for(int j = 0; j < lin[i].points.size(); j++)
+        for(unsigned int j = 0; j < lin[i].points.size(); j++)
         {
             int numX = ceil((lin[i].points[j]->x)/30);
 
@@ -92,7 +92,7 @@ void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin)
 
         sec[numOfSec[0]].push_back(new Way{vector<Node*>{new Node{lin[i].points[0]->x, lin[i].points[0]->y}}});
                                                     //points
-        for(int j = 1; j < numOfSec.size(); j++)
+        for(unsigned int j = 1; j < numOfSec.size(); j++)
         {
             if(numOfSec[j] == numOfSec[j-1])
             {
@@ -100,7 +100,7 @@ void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin)
             }
             else
             {
-                // dodajemy wczesniejszy punkt ze starego sektora do nowego
+                // dodajemy stary punkt do nowego sektora
                 sec[numOfSec[j]].push_back(new Way{vector<Node*>{new Node{lin[i].points[j-1]->x, lin[i].points[j-1]->y}}});
 
                 // dodajemy nowy punkt do nowego sektora
@@ -134,7 +134,7 @@ void setWay(map<int,vector<Way*>> &sec, string path)
     setSectors(sec, lines);
 }
 
-Car::Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len)
+Car::Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi)
               // masa, ,max moment silnika, przelozenie, promien kola, max predkosc
 {
     mass = m;
@@ -156,6 +156,8 @@ Car::Car(int m, double t, int tor, double r, double mv, double ang, double _x, d
     velocity = 0;
 
     length = len;
+
+    width = wi;
 
     wheelAng = 0;
 }
@@ -198,6 +200,61 @@ void Car::changeWheelAng(double intensity, clock_t &bef)
         wheelAng = 40;
     else if(wheelAng < -40)
         wheelAng = -40;
+}
+
+vector<double> Car::radar(vector<Way*> &ways)
+{
+    vector<double> result;
+    double minimum = 60;
+
+    for(int k = 0; k < 14; k++)
+    {
+        double ang;
+
+        switch(k)
+        {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+                {
+                    ang = angle - (k * 15.0);
+                }break;
+            case 7:
+                {
+                    ang = angle - 180.0;
+                }break;
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+                {
+                    ang = angle - (270 + (k-8)*15.0);
+                }
+        }
+
+        for(unsigned int i = 0; i < ways.size(); i++)
+        {
+            for(unsigned int j = 1; j < ways[i]->points.size(); j++)
+            {
+                double xA = ways[i]->points[j-1]->x;
+                double yA = ways[i]->points[j-1]->y;
+
+                double xB = ways[i]->points[j]->x;
+                double yB = ways[i]->points[j]->y;
+
+                double tmp = dist(ang, x, y, xA, yA, xB, yB);
+
+                if(tmp < minimum)
+                    minimum = tmp;
+            }
+        }
+        result.push_back(minimum);
+    }
+    return result;
 }
 
 void Car::showPos()
