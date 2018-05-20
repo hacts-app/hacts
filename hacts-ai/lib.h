@@ -9,21 +9,15 @@
 #include <iterator>
 #include <fstream>
 #include <string>
+#include <map>
 
 using namespace std;
 
 #define PI 3.14159265
 
-struct Node
-{
-    double x;
-    double y;
-};
-
-struct Way
-{
-    vector<Node*> points;
-};
+class Car;
+struct Node;
+struct Way;
 
 clock_t delta_t(clock_t &bef);
 
@@ -39,7 +33,12 @@ inline void split(const string &s, char delim, Out result);
 
 vector<string> split(const string &s, char delim);
 
-vector<Way> setWay(string path);
+template<typename T>
+void push_back2(vector<T> &v, T &elem1, T &elem2);
+
+void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin);
+
+void setWay(map<int,vector<Way*>> &sec, string path);
 
 class Car
 {
@@ -55,9 +54,10 @@ public:
     double wheelAng;
     double x,y;
     double length;
+    double width;
 
 public:
-    Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len);
+    Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);
     // masa, ,max moment silnika, prze³o¿enie, promien ko³a, max prêdkoœæ
 
     void onGasPush(double trans, clock_t &bef);
@@ -71,11 +71,20 @@ public:
 
     void showPos();
 
-    vector<double> radar();
+    vector<double> radar(vector<Way*> &ways);
 
     void changePos(clock_t &bef);
         // zmiana pozycji i KĄTA
 
 };
 
+struct Node
+{
+    double x;
+    double y;
+};
 
+struct Way
+{
+    vector<Node*> points;
+};

@@ -22,12 +22,14 @@ void pokaz(Car autko, int &i)
 
 int main()
 {
-    //vector<Way> ways = setWay(path);
+    map<int,vector<Way*>> sectors;
+
+    setWay(sectors, path);
 
     befPos = clock();
     befAct = clock();
 
-    Car golf3(1300, 350, 3.23, 0.315, 60, 0, 0, 0, 2);
+    Car golf3(1300, 350, 3.23, 0.315, 60, 0, 0, 0, 3.5, 1.4);
     int i = 1;
 
     /*while(i*test_time <= 2000)
