@@ -8,7 +8,6 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QGeoCoordinate>
-
 #include <QDebug>
 
 #define SECTOR_WIDTH 30 // meters
@@ -73,7 +72,7 @@ static bool hasAllAttributes(QXmlStreamAttributes &attrs, const QStringList &nam
 // Returns an angle ABC
 //
 // https://stackoverflow.com/a/3487062/3105260
-static bool angleBetweenNodes(const Node &a, const Node &b, const Node &c) {
+static double angleBetweenNodes(const Node &a, const Node &b, const Node &c) {
     Node ab { b.x - a.x, b.y - a.y };
     Node cb { b.x - c.x, b.y - c.y };
 
@@ -81,6 +80,14 @@ static bool angleBetweenNodes(const Node &a, const Node &b, const Node &c) {
     double cross = (ab.x * cb.y - ab.y * cb.x);
 
     return qAtan2(cross, dot);
+}
+
+static Node moveNode(Node node, double angle, double distance) {
+    return Node { node.x + qSin(angle) * distance, node.y + qCos(angle) * distance };
+}
+
+static Node nodeHalfwayAcross(Node a, Node b) {
+    return Node { (a.x + b.x) / 2, (a.y + b.y) / 2 };
 }
 
 // Read and process <node id=".." lat=".." lon=".." />
@@ -209,14 +216,14 @@ static void removeNodesNotPresentInWays() {
     }
 }
 
-static void addBorderNode(OutputWay *outputWay, const double x, const double y) {
-    if(qIsNaN(x) || qIsNaN(y)) // TODO: why is this NaN sometimes?
+static void addBorderNode(OutputWay *outputWay, Node node) {
+    if(qIsNaN(node.x) || qIsNaN(node.y)) // TODO: why is this NaN sometimes?
         return;
 
     static qint64 nodeId = -1;
-    borderNodes[nodeId] = {x, y};
+    borderNodes[nodeId] = node;
 
-    qint64 sectorId = getSector(borderNodes[nodeId]);
+    qint64 sectorId = getSector(node);
     outputWay->nodes.append(nodeId);
     outputWay->sectors |= sectorId;
     if(! sectors.contains(sectorId, outputWay))
@@ -231,14 +238,29 @@ static void addBorderNodes(Node node, double angle, OutputWay *left, OutputWay *
     // make the angle be for a line perpendicular to |AB|
     angle += M_PI/2.0;
 
-    addBorderNode(left, node.x + qSin(angle) * roadWidth, node.y + qCos(angle) * roadWidth);
-    addBorderNode(right, node.x - qSin(angle) * roadWidth, node.y - qCos(angle) * roadWidth);
+    addBorderNode(left, moveNode(node, angle, roadWidth));
+    addBorderNode(right, moveNode(node, angle, -roadWidth));
 }
 
 static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, OutputWay *left, OutputWay *right) {
     double roadFragmentCartesianAngle = qAtan2(a.x - b.x, a.y - b.y);
 
-    Node halfway { (a.x + b.x) / 2, (a.y + b.y) / 2 };
+    double angleOnStart = M_PI;
+    double angleOnEnd = M_PI;
+
+    if(prev)
+        angleOnStart = angleBetweenNodes(*prev, a, b);
+    if(next)
+        angleOnEnd = angleBetweenNodes(a, b, *next);
+
+    double startDisplacement = qAbs(qSin(angleOnStart)) * -4;
+    double endDisplacement = qAbs(qSin(angleOnEnd)) * -4;
+    //qInfo() << qRadiansToDegrees(angleOnStart) << qRadiansToDegrees(angleOnEnd);
+
+    a = moveNode(a, roadFragmentCartesianAngle, startDisplacement);
+    b = moveNode(b, roadFragmentCartesianAngle + M_PI, endDisplacement);
+    Node halfway = nodeHalfwayAcross(a, b);
+
 
     addBorderNodes(a, roadFragmentCartesianAngle, left, right);
     addBorderNodes(halfway, roadFragmentCartesianAngle, left, right);
@@ -261,8 +283,8 @@ static void addNodesToHighway() {
                 previousNode = &highwayNodes[way.nodes.value(i - 2)];
 
             Node *nextNode = nullptr;
-            if(i == way.nodes.length() - 1)
-                nextNode = &highwayNodes[way.nodes.value(way.nodes.value(i + 1))];
+            if(i != way.nodes.length() - 1)
+                nextNode = &highwayNodes[way.nodes.value(i + 1)];
 
             addBorderToTwoNodeWay(previousNode, firstNode, secondNode, nextNode, left, right);
         }
@@ -329,6 +351,8 @@ static void outputDataHACTS(QFile &file) {
 
 int main(int argc, char *argv[]) {
     QTextStream cerr(stderr);
+
+    qInfo() << qRadiansToDegrees(angleBetweenNodes())
 
     argc = 3;
 
