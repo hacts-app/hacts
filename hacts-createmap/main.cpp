@@ -27,8 +27,11 @@ struct Way {
 };
 
 struct OutputWay {
+    qint64 highwayId;
     QVector<qint64> nodes;
     QSet<qint64> sectors;
+
+    OutputWay(qint64 hId) : highwayId(hId) {}
 };
 
 static QMap<qint64, Node> highwayNodes;
@@ -232,18 +235,20 @@ static void addBorderNode(OutputWay *outputWay, Node node) {
     nodeId -= 1;
 }
 
-static void addBorderNodes(Node node, double angle, OutputWay *left, OutputWay *right) {
-    double roadWidth = 4; // meters
+//static void addBorderNodes(Node node, double angle, OutputWay *left, OutputWay *right) {
 
-    // make the angle be for a line perpendicular to |AB|
-    angle += M_PI/2.0;
+//    // make the angle be for a line perpendicular to |AB|
+//    angle += M_PI/2.0;
 
-    addBorderNode(left, moveNode(node, angle, roadWidth));
-    addBorderNode(right, moveNode(node, angle, -roadWidth));
-}
+//    addBorderNode(left, moveNode(node, angle, roadWidth));
+//    addBorderNode(right, moveNode(node, angle, -roadWidth));
+//}
 
 static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, OutputWay *left, OutputWay *right) {
+    double roadWidth = 4; // meters
+
     double roadFragmentCartesianAngle = qAtan2(a.x - b.x, a.y - b.y);
+    double perpendicularAngle = roadFragmentCartesianAngle + M_PI/2.0;
 
     double angleOnStart = M_PI;
     double angleOnEnd = M_PI;
@@ -253,24 +258,31 @@ static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, Output
     if(next)
         angleOnEnd = angleBetweenNodes(a, b, *next);
 
-    double startDisplacement = qAbs(qSin(angleOnStart)) * -4;
-    double endDisplacement = qAbs(qSin(angleOnEnd)) * -4;
-    //qInfo() << qRadiansToDegrees(angleOnStart) << qRadiansToDegrees(angleOnEnd);
+    double startDisplacement = qSin(qAbs(angleOnStart)) * -4;
+    double endDisplacement = qSin(qAbs(angleOnEnd)) * -4;
 
-    a = moveNode(a, roadFragmentCartesianAngle, startDisplacement);
-    b = moveNode(b, roadFragmentCartesianAngle + M_PI, endDisplacement);
+    Node backedUpA = moveNode(a, roadFragmentCartesianAngle, startDisplacement);
+    Node backedUpB = moveNode(b, roadFragmentCartesianAngle + M_PI, endDisplacement);
     Node halfway = nodeHalfwayAcross(a, b);
 
+    bool startTurnsRight = angleOnStart < 0;
+    bool endTurnsRight = angleOnEnd < 0;
 
-    addBorderNodes(a, roadFragmentCartesianAngle, left, right);
-    addBorderNodes(halfway, roadFragmentCartesianAngle, left, right);
-    addBorderNodes(b, roadFragmentCartesianAngle, left, right);
+    addBorderNode(right, moveNode(startTurnsRight ? backedUpA : a, perpendicularAngle, roadWidth));
+    addBorderNode(right, moveNode(halfway, perpendicularAngle, roadWidth));
+    addBorderNode(right, moveNode(endTurnsRight ? backedUpB : b, perpendicularAngle, roadWidth));
+
+    addBorderNode(left, moveNode(!startTurnsRight ? backedUpA : a, perpendicularAngle, -roadWidth));
+    addBorderNode(left, moveNode(halfway, perpendicularAngle, -roadWidth));
+    addBorderNode(left, moveNode(!endTurnsRight ? backedUpB : b, perpendicularAngle, -roadWidth));
 }
 
 static void addNodesToHighway() {
-    for(const Way &way : ways) {
-        OutputWay *left = new OutputWay();
-        OutputWay *right = new OutputWay();
+    for(qint64 wayId : ways.keys()) {
+        const Way &way = ways[wayId];
+
+        OutputWay *left = new OutputWay(wayId);
+        OutputWay *right = new OutputWay(wayId);
         outputWays << left << right;
 
         // iterate for every element but first
@@ -323,7 +335,7 @@ static void outputDataOSM(QFile &file) {
         out << "  </way>\n";
     }
 
-    qint64 wayId = -10000000;
+    qint64 wayId = -100000000;
     for(OutputWay *way : outputWays) {
         out << "  <way id=\"" << wayId++ << "\" version=\"1\">\n";
         out << "    <tag k=\"highway\" v=\"track\" />\n";
@@ -339,12 +351,36 @@ static void outputDataHACTS(QFile &file) {
     QTextStream out(&file);
     out.setRealNumberPrecision(12);
 
-    out << "hacts map file v1\n";
-    out << "width_meters=" << bounds.width << "\n";
-    out << "height_meters=" << bounds.height << "\n";
-    out << "width_sectors=" << bounds.sectors_horizontal << "\n";
-    out << "height_sectors=" << bounds.sectors_vertical << "\n";
-    out << "\n";
+//    out << "hacts map file v1\n";
+//    out << "width_meters=" << bounds.width << "\n";
+//    out << "height_meters=" << bounds.height << "\n";
+//    out << "width_sectors=" << bounds.sectors_horizontal << "\n";
+//    out << "height_sectors=" << bounds.sectors_vertical << "\n";
+//    out << "\n";
+    for(qint64 outputWayId = 0; outputWayId < outputWays.size(); ++outputWayId) {
+        OutputWay const * const way = outputWays[outputWayId];
+
+        if(way->nodes.empty())
+            continue;
+
+        out << outputWayId << '\t';
+        out << way->highwayId << '\t';
+
+        out << '\t'; // no neighbours
+
+        bool first = true;
+        for(qint64 nodeId : way->nodes) {
+            if(!first)
+                out << ',';
+
+            out << borderNodes.value(nodeId).x;
+            out << ',';
+            out << borderNodes.value(nodeId).y;
+
+            first = false;
+        }
+        out << '\n';
+    }
 
     // output ways
 }
@@ -352,20 +388,25 @@ static void outputDataHACTS(QFile &file) {
 int main(int argc, char *argv[]) {
     QTextStream cerr(stderr);
 
-    qInfo() << qRadiansToDegrees(angleBetweenNodes())
-
-    argc = 3;
-
     if(argc != 3) {
         cerr << "Usage " << argv[0] << " <source map> <output map>\n"
-            << "    This program adds lane and other information into OSM maps for\n"
-            << "    transport simulation purpouses.\n";
+               "    This program adds lane and other information into OSM maps for\n"
+               "    transport simulation purpouses.\n"
+               "\n"
+               "    When <source map> or <output map> are \"-\", stdin and stdout are used \n"
+               "    respectively.\n";
     }
 
-    QFile input("/home/karol/projects/hacts/hacts-createmap/potok.osm");
-    if(! input.open(QIODevice::ReadOnly)) {
-        cerr << "Failed to open " << argv[1] << ": " << input.errorString() << "\n";
-        return 1;
+
+    QFile input;
+    if(QString("-") == argv[1]) {
+        input.open(stdin, QIODevice::ReadOnly);
+    } else {
+        input.setFileName(argv[1]);
+        if(! input.open(QIODevice::ReadOnly)) {
+            cerr << "Failed to open " << argv[1] << ": " << input.errorString() << "\n";
+            return 1;
+        }
     }
 
     QXmlStreamReader reader(&input);
@@ -381,12 +422,17 @@ int main(int argc, char *argv[]) {
     addNodesToHighway();
 
 
-    QFile output("/home/karol/projects/hacts/hacts-createmap/potok.output.osm");
-    if(! output.open(QIODevice::WriteOnly)) {
-        cerr << "Failed to open " << argv[2] << " for writing: " << output.errorString() << "\n";
-        return 1;
+    QFile output;
+    if(QString("-") == argv[2]) {
+        output.open(stdout, QIODevice::WriteOnly);
+    } else {
+        if(! output.open(QIODevice::WriteOnly)) {
+            cerr << "Failed to open " << argv[2] << " for writing: " << output.errorString() << "\n";
+            return 1;
+        }
     }
-    outputDataOSM(output);
+    //outputDataOSM(output);
+    outputDataHACTS(output);
 
     if(output.error() != QFile::NoError) {
         cerr << "Failed writing to " << argv[2] << ": " << output.errorString() << "\n";
