@@ -136,9 +136,11 @@ void setWay(map<int,vector<Way*>> &sec, string path)
 */
 void setRoads(const string path)
 {
-    ifstream file(path);
+    fstream file;
     string medium;
     vector<string> data;
+
+    file.open(path, ios::in);
 
     while(getline(file, medium))
     {
@@ -156,7 +158,7 @@ void setRoads(const string path)
         int nr = stoi(tmp[1]);
 
         roads[nr].ways.push_back(Way{stoi(tmp[0])}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
-                                             // tmp[2] to jest string a ma być wektor intow xd
+
         vector<string> tmpv= split(tmp[2], ',');
         vector<int> neighbrs;
 
@@ -169,7 +171,7 @@ void setRoads(const string path)
 
         vector<string> coords = split(tmp[3], ',');
 
-        for(int i = 1; i < coords.size(); i++)
+        for(unsigned int i = 1; i < coords.size(); i++)
         {
             roads[nr].ways.back().points.push_back(new Node{stod(coords[i-1]), stod(coords[i])}); // dodawanie wszystkich wezlow do drogi
         }
@@ -378,7 +380,7 @@ bool Car::onRoad(vector<Node*> &hiWay, vector<Node*> &loWay)
 
 void Car::showPos()
 {
-    cout << "(x = " << x << ", y = " << y <<")";
+    clog << "(x = " << x << ", y = " << y <<") Angle = " << angle << " V = " << velocity <<endl;
 }
 
 void Car::changePos(clock_t &bef)

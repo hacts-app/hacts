@@ -52,7 +52,7 @@ Node moveNode(double x, double y, double a, double R);
 
 class Car
 {
-public:
+private:
     double velocity;
     double max_velocity;
     double acceleration;
