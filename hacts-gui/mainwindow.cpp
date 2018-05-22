@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QGraphicsView>
+#include <QDir>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -10,12 +12,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     process = new QProcess(this);
+    //process->setWorkingDirectory(r("../hacts-ai/"));
 
 #ifdef Q_OS_WIN
     process->start("../hacts-ai/hacts-ai.exe");
 #else
     process->start("../hacts-ai/hacts-ai");
 #endif
+
     connect(process, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
 }
 
@@ -34,6 +38,12 @@ void MainWindow::processReadyRead()
 
 void MainWindow::processLine(const QString &line)
 {
-    QStringList commandParts = line.split(" ");
-    qDebug() << commandParts[0];
+    qDebug() << line;
+  //  QStringList commandParts = line.split(" ");
+//    qDebug() << commandParts[0];
+}
+
+void MainWindow::on_zoomInButton_clicked()
+{
+
 }

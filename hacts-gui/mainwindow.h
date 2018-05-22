@@ -16,14 +16,16 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-private slots: // to dodane
-    void processReadyRead(); // to dodane
+private slots:
+    void processReadyRead();
+
+    void on_zoomInButton_clicked();
 
 private:
     Ui::MainWindow *ui;
 
-    QProcess *process; //to dodane
-    void processLine(const QString &line); // i to dodane xd
+    QProcess *process;
+    void processLine(const QString &line);
 };
 
 #endif // MAINWINDOW_H
