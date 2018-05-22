@@ -44,6 +44,3 @@ target_wrapper.*
 
 # QtCreator CMake
 CMakeLists.txt.user*
-
-# this thing
-hacts.pro.user
