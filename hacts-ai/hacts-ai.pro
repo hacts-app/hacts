@@ -7,9 +7,17 @@
 TARGET = hacts-ai
 TEMPLATE = app
 
+QT -= core gui
+
+
+CONFIG += c++17
+QMAKE_CXXFLAGS += -std=gnu++17
+
+DESTDIR = $$_PRO_FILE_PWD_/../out
+
 SOURCES += \
         main.cpp \
-    lib.cpp
+        lib.cpp
 
 HEADERS += \
     lib.h

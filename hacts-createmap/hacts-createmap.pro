@@ -5,8 +5,12 @@
 #-------------------------------------------------
 
 QT += core positioning
+QT -= ui
 
-CONFIG += c++11
+CONFIG += c++17
+QMAKE_CXXFLAGS += -std=gnu++17
+
+DESTDIR = $$_PRO_FILE_PWD_/../out
 
 TARGET = hacts-createmap
 TEMPLATE = app
