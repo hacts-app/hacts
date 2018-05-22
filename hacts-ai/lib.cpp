@@ -74,7 +74,7 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
 
     return 60; // max zasieg wzroku
 }
-
+/*
 void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin)
 {
     for(unsigned int i = 0; i < lin.size(); i++)
@@ -132,6 +132,67 @@ void setWay(map<int,vector<Way*>> &sec, string path)
         a++;
     }
     setSectors(sec, lines);
+}
+*/
+void setRoads(const string path)
+{
+    ifstream file(path);
+    string medium;
+    vector<string> data;
+
+    while(getline(file, medium))
+    {
+        data.push_back(medium);
+    }
+
+    for(string x : data)
+    {
+        vector<string> tmp;
+
+        tmp = split(x, '\t');
+
+        // tmp contains {NameOfWay, NameOfRoad, NeighboursOfWay, NodesOfWay};
+
+        int nr = stoi(tmp[1]);
+
+        roads[nr].ways.push_back(Way{stoi(tmp[0])}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
+                                             // tmp[2] to jest string a ma być wektor intow xd
+        vector<string> tmpv= split(tmp[2], ',');
+        vector<int> neighbrs;
+
+        for(string z : tmpv)
+        {
+            neighbrs.push_back(stoi(z));
+        }
+
+        roads[nr].ways.back().neighboursId = neighbrs;
+
+        vector<string> coords = split(tmp[3], ',');
+
+        for(int i = 1; i < coords.size(); i++)
+        {
+            roads[nr].ways.back().points.push_back(new Node{stod(coords[i-1]), stod(coords[i])}); // dodawanie wszystkich wezlow do drogi
+        }
+    }
+}
+
+bool upOrDown(Node* &A, Node* &B, Node P)
+{
+    // wyliczanie prostej przechodzacej przez A i B
+    double a = (A->y - B->y) / (A->x - B->x);
+
+    double b = A->y - a * A->x;
+
+    if(P.y > (a*P.x + b)) // powyzej
+        return true;
+
+    return false; // ponizej i na
+
+}
+
+Node moveNode(double x, double y, double a, double R)
+{
+    return Node{x + sin(a * PI / 180.0) * R, y +cos(a * PI / 180.0) * R};
 }
 
 Car::Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi)
@@ -257,6 +318,64 @@ vector<double> Car::radar(vector<Way*> &ways)
     return result;
 }
 
+bool Car::onRoad(vector<Node*> &hiWay, vector<Node*> &loWay)
+{
+    double R = (sqrt(pow(length, 2) + pow(width, 2))) / 2;
+    // promien okregu opisanego na samochodzie
+
+    double alpha = acos(1-(pow(width, 2)) / (2 * pow(R, 2))) * 180.0 / PI;
+    // kat miedzy dwoma R-ami naprzeciwko szerokosci pojazdu
+
+    double a1 = tan((angle + alpha/2) * PI / 180.0);
+    // kierunkowa 1 R
+
+    double a2 = tan((angle - alpha/2) * PI / 180.0);
+    // kierunkowa 2 R
+
+    vector<Node> carCorners; // ABCD ...
+
+    carCorners.push_back(moveNode(x, y, a1, R));
+
+    carCorners.push_back(moveNode(x, y, a2, R));
+
+    carCorners.push_back(moveNode(x, y, a1, -R));
+
+    carCorners.push_back(moveNode(x, y, a2, -R));
+
+    for(Node i : carCorners)
+    {
+        bool firstVerif;
+        bool secondVerif;
+
+        for(unsigned int j = 1; j < loWay.size(); j++)
+        {
+            // szukanie 2 nodow miedzy ktorymi sie znajduje dany punkt
+            if((i.x >= loWay[j]->x && i.x <= loWay[j-1]->x) || (i.x >= loWay[j-1]->x && i.x <= loWay[j]->x))
+            {
+                firstVerif = upOrDown(loWay[j], loWay[j-1], i);
+
+                break;
+            }
+        } // loWay
+
+        for(unsigned int j = 1; j < hiWay.size(); j++)
+        {
+            // szukanie 2 nodow miedzy ktorymi sie znajduje dany punkt
+            if((i.x >= hiWay[j]->x && i.x <= hiWay[j-1]->x) || (i.x >= hiWay[j-1]->x && i.x <= hiWay[j]->x))
+            {
+                secondVerif = upOrDown(hiWay[j], hiWay[j-1], i);
+
+                break;
+            }
+        } // hiWay
+
+        if(firstVerif == secondVerif) // jesli samochod bedzie pod lub nad obiema krawedziami naraz to wyjechal
+            return false;
+    }
+
+    return true;
+}
+
 void Car::showPos()
 {
     cout << "(x = " << x << ", y = " << y <<")";
@@ -279,4 +398,5 @@ void Car::changePos(clock_t &bef)
     y += (velocity * sin(angle * PI / 180.0)  * delta_t(tmp[2]) * 0.001 );
 
     bef = clock();
+
 }

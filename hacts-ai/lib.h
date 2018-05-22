@@ -10,6 +10,7 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <conio.h>
 
 using namespace std;
 
@@ -18,6 +19,9 @@ using namespace std;
 class Car;
 struct Node;
 struct Way;
+struct Road;
+
+extern map<int, Road> roads;
 
 clock_t delta_t(clock_t &bef);
 
@@ -35,10 +39,16 @@ vector<string> split(const string &s, char delim);
 
 template<typename T>
 void push_back2(vector<T> &v, T &elem1, T &elem2);
-
+/*
 void setSectors(map<int,vector<Way*>> &sec, vector<Way> lin);
 
 void setWay(map<int,vector<Way*>> &sec, string path);
+*/
+void setRoads(const string path);
+
+bool upOrDown(Node* &A, Node* &B, Node P);
+
+Node moveNode(double x, double y, double a, double R);
 
 class Car
 {
@@ -58,20 +68,24 @@ public:
 
 public:
     Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);
-    // masa, ,max moment silnika, prze³o¿enie, promien ko³a, max prêdkoœæ
+    // masa, ,max moment silnika, przelozenie, promien kola, max predkosc
 
     void onGasPush(double trans, clock_t &bef);
-    // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
+    // trans od 0.00 do 1 to % wcisniecia gazu ... zakladamy ze aktywowane co sekunde
 
     void onBrakePush(double per, clock_t &bef);
        // tak jak w gazie
 
     void changeWheelAng(double intensity, clock_t &bef);
-       // od -1 do 1 .. ujemne skrecają w prawo dodatnie w lewo
+       // od -1 do 1 .. ujemne skrecaja w prawo dodatnie w lewo
 
     void showPos();
 
     vector<double> radar(vector<Way*> &ways);
+    // petla ktora liczy zblizone (pod stalymi katami) odleglosci od krawedzi drogi [POKI CO BRAK DETEKCJI INNYCH POJAZDOW]
+
+    bool onRoad(vector<Node*> &hiWay, vector<Node*> &loWay);
+    // sprawdza czy skrajne punkty (A,B,C,D) zawieraja sie w drodze po ktorej jedzie
 
     void changePos(clock_t &bef);
         // zmiana pozycji i KĄTA
@@ -86,5 +100,12 @@ struct Node
 
 struct Way
 {
+    int id;
+    vector<int> neighboursId;
     vector<Node*> points;
+};
+
+struct Road
+{
+    vector<Way> ways;
 };
