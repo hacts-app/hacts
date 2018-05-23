@@ -34,9 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     scene = new QGraphicsScene(this);
     view->setScene(scene);
-    scene->addLine(0, 5, 10, 100, pen);
-    scene->addLine(-3, 300, 100, 150, pen);
-
+    view->addBorder(10000);
 
     carShape = new CarShape();
     scene->addItem(carShape);
@@ -49,6 +47,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
 void MainWindow::processReadyRead()
 {
     while(process->canReadLine()) {
@@ -59,7 +58,7 @@ void MainWindow::processReadyRead()
 
 void MainWindow::processLine(const QString &line)
 {
-    qDebug() << line;
+    //qDebug() << line;
     QStringList commandParts = line.split(" ");
 
     if(commandParts.value(0) == "movecar") {
@@ -67,7 +66,7 @@ void MainWindow::processLine(const QString &line)
         double y = commandParts.value(3).toDouble();
         double angle = commandParts.value(4).toDouble();
         carShape->setX(x);
-        carShape->setY(y);
+        carShape->setY(-y);
         carShape->setRotation(-90 + angle);
     }
 }

@@ -1,6 +1,8 @@
 #include "graphicsview.h"
 #include <QTimeLine>
 #include <QBrush>
+#include <QLineF>
+#include <QPointF>
 
 GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
@@ -10,7 +12,23 @@ GraphicsView::GraphicsView(QWidget *parent) :
     setBackgroundBrush(QBrush("#e8eBeA", Qt::Dense1Pattern));
 }
 
-// based on Qt wiki
+
+void GraphicsView::addBorder(qreal diameter)
+{
+    QPen pen;
+    pen.setWidthF(20);
+
+    qreal h = diameter/2;
+    const QPointF topLeft {-h, -h}, topRight {-h, h};
+    const QPointF bottomLeft {h, -h}, bottomRight {h, h};
+    scene()->addLine(QLineF(topLeft, topRight), pen);
+    scene()->addLine(QLineF(topRight, bottomRight), pen);
+    scene()->addLine(QLineF(bottomRight, bottomLeft), pen);
+    scene()->addLine(QLineF(bottomLeft, topLeft), pen);
+}
+
+
+// based on Qt wiki:
 
 void GraphicsView::wheelEvent(QWheelEvent *event) {
     int numDegrees = event->delta() / 8;
@@ -20,7 +38,7 @@ void GraphicsView::wheelEvent(QWheelEvent *event) {
 
 void GraphicsView::scalingTime(qreal x) {
     Q_UNUSED(x)
-    qreal factor = 1.0+ qreal(numScheduledScalings) / 300.0;
+    qreal factor = 1.0 + qreal(numScheduledScalings) / 300.0;
     scale(factor, factor);
 }
 
