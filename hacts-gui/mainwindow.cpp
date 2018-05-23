@@ -4,11 +4,19 @@
 #include <QGraphicsView>
 #include <QDir>
 #include <QDebug>
+#include <QGridLayout>
+#include <QPen>
+
+#include "carshape.h"
+
+static QPen pen;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    pen.setWidthF(0.1);
+
     ui->setupUi(this);
 
     process = new QProcess(this);
@@ -19,6 +27,16 @@ MainWindow::MainWindow(QWidget *parent) :
 #else
     process->start("./hacts-ai");
 #endif
+
+
+    view = new GraphicsView(this);
+    ui->gridLayout->replaceWidget(ui->graphicsViewWidget, view);
+
+    scene = new QGraphicsScene(this);
+    view->setScene(scene);
+    scene->addLine(0, 5, 10, 1500, pen);
+    scene->addLine(-3, 300, 100, 150, pen);
+    scene->addItem(new CarShape());
 
     connect(process, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
 }
@@ -45,5 +63,10 @@ void MainWindow::processLine(const QString &line)
 
 void MainWindow::on_zoomInButton_clicked()
 {
+    view->scrollZoom(10);
+}
 
+void MainWindow::on_zoomOutButton_clicked()
+{
+    view->scrollZoom(-10);
 }

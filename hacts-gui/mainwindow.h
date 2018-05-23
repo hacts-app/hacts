@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 #include <QProcess>
+#include <QGraphicsScene>
+
+#include "graphicsview.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -21,8 +25,13 @@ private slots:
 
     void on_zoomInButton_clicked();
 
+    void on_zoomOutButton_clicked();
+
 private:
     Ui::MainWindow *ui;
+
+    GraphicsView *view;
+    QGraphicsScene *scene;
 
     QProcess *process;
     void processLine(const QString &line);
