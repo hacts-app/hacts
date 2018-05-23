@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     scene = new QGraphicsScene(this);
     view->setScene(scene);
-    scene->addLine(0, 5, 10, 1500, pen);
+    scene->addLine(0, 5, 10, 100, pen);
     scene->addLine(-3, 300, 100, 150, pen);
     scene->addItem(new CarShape());
 
