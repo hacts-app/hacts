@@ -13,7 +13,8 @@ public:
     Point pt1;
     Point pt2;
 
-    bool intersects(const Line &l, Point *intersectionPoint) const;
+    bool intersects(const Line &l, Point &intersectionPoint) const;
+    bool intersects(const Line &l) const;
 
     /*
      * Returns the angle of a line in radians.
