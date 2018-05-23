@@ -197,9 +197,11 @@ Node moveNode(double x, double y, double a, double R)
     return Node{x + sin(a * PI / 180.0) * R, y +cos(a * PI / 180.0) * R};
 }
 
-Car::Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi)
+Car::Car(int id, int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi)
               // masa, ,max moment silnika, przelozenie, promien kola, max predkosc
 {
+    carId = id;
+
     mass = m;
 
     max_transfer = t;
@@ -381,6 +383,11 @@ bool Car::onRoad(vector<Node*> &hiWay, vector<Node*> &loWay)
 void Car::showPos()
 {
     clog << "(x = " << x << ", y = " << y <<") Angle = " << angle << " V = " << velocity <<endl;
+}
+
+void Car::givePos()
+{
+    cout << carId <<" "<< x <<" "<< y <<" "<<angle <<endl;
 }
 
 void Car::changePos(clock_t &bef)

@@ -53,6 +53,7 @@ Node moveNode(double x, double y, double a, double R);
 class Car
 {
 private:
+    int carId;
     double velocity;
     double max_velocity;
     double acceleration;
@@ -67,7 +68,7 @@ private:
     double width;
 
 public:
-    Car(int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);
+    Car(int id, int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);
     // masa, ,max moment silnika, przelozenie, promien kola, max predkosc
 
     void onGasPush(double trans, clock_t &bef);
@@ -79,7 +80,9 @@ public:
     void changeWheelAng(double intensity, clock_t &bef);
        // od -1 do 1 .. ujemne skrecaja w prawo dodatnie w lewo
 
-    void showPos();
+    void showPos(); // informacje dla nas
+
+    void givePos(); // informacje dla ui
 
     vector<double> radar(vector<Way*> &ways);
     // petla ktora liczy zblizone (pod stalymi katami) odleglosci od krawedzi drogi [POKI CO BRAK DETEKCJI INNYCH POJAZDOW]
