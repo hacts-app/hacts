@@ -3,13 +3,9 @@
 
 using namespace std;
 
-clock_t delta_t(clock_t &bef)
+clock_t delta_t(clock_t bef)
 {
-    clock_t tmp = bef;
-
-    bef = clock();
-
-    return bef - tmp;
+    return clock() - bef;
 }
 
 double radToDeg(double rad)
@@ -227,7 +223,7 @@ Car::Car(int id, int m, double t, int tor, double r, double mv, double ang, doub
     wheelAng = 0;
 }
 
-void Car::onGasPush(double trans, clock_t &bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
+void Car::onGasPush(double trans, clock_t bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
 {
     double transfer = max_transfer * trans;
 
@@ -241,7 +237,7 @@ void Car::onGasPush(double trans, clock_t &bef) // trans od 0.00 do 1 to % wciœ
         velocity = max_velocity;
 }
 
-void Car::onBrakePush(double per, clock_t &bef)
+void Car::onBrakePush(double per, clock_t bef)
 {
     const double max_acc = -9.59; // to chyba jest max opoznienie w hamowaniu
 
@@ -253,7 +249,7 @@ void Car::onBrakePush(double per, clock_t &bef)
         velocity = 0;
 }
 
-void Car::changeWheelAng(double intensity, clock_t &bef)
+void Car::changeWheelAng(double intensity, clock_t bef)
 {
     const int max_rot = 15 ; // maksymalna predkosc zmiany kata  kol w sekundzie
 
@@ -387,14 +383,14 @@ void Car::showPos()
 
 void Car::givePos()
 {
-    cout << carId <<" "<< x <<" "<< y <<" "<<angle <<endl;
+    cout <<"movecar "<< carId <<" "<< x <<" "<< y <<" "<< angle <<endl;
 }
 
-void Car::changePos(clock_t &bef)
+void Car::changePos(clock_t bef)
 {
-    vector<clock_t> tmp(3, bef);
 
-    angle += radToDeg( (2 * velocity * sin(wheelAng * PI / 180.0)) / length ) * delta_t(tmp[0]) * 0.001;
+
+    angle += radToDeg( (2 * velocity * sin(wheelAng * PI / 180.0)) / length ) * delta_t(bef) * 0.001;
 
     if(angle > 360)
         angle -= 360;
@@ -402,10 +398,9 @@ void Car::changePos(clock_t &bef)
     if(angle < 0)
         angle += 360;
 
-    x += (velocity * cos(angle * PI / 180.0)  * delta_t(tmp[1]) * 0.001);
+    x += (velocity * cos(angle * PI / 180.0)  * delta_t(bef) * 0.001);
 
-    y += (velocity * sin(angle * PI / 180.0)  * delta_t(tmp[2]) * 0.001 );
+    y += (velocity * sin(angle * PI / 180.0)  * delta_t(bef) * 0.001 );
 
-    bef = clock();
 
 }
