@@ -15,9 +15,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //process->setWorkingDirectory(r("../hacts-ai/"));
 
 #ifdef Q_OS_WIN
-    process->start("../hacts-ai/hacts-ai.exe");
+    process->start("./hacts-ai.exe");
 #else
-    process->start("../hacts-ai/hacts-ai");
+    process->start("./hacts-ai");
 #endif
 
     connect(process, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
@@ -39,8 +39,8 @@ void MainWindow::processReadyRead()
 void MainWindow::processLine(const QString &line)
 {
     qDebug() << line;
-  //  QStringList commandParts = line.split(" ");
-//    qDebug() << commandParts[0];
+    QStringList commandParts = line.split(" ");
+    qDebug() << commandParts[0];
 }
 
 void MainWindow::on_zoomInButton_clicked()
