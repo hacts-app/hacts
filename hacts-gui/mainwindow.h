@@ -6,6 +6,7 @@
 #include <QGraphicsScene>
 
 #include "graphicsview.h"
+#include "carshape.h"
 
 
 namespace Ui {

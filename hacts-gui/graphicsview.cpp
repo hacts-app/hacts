@@ -1,11 +1,16 @@
 #include "graphicsview.h"
 #include <QTimeLine>
+#include <QBrush>
 
 GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     setDragMode(QGraphicsView::ScrollHandDrag);
+
+    setBackgroundBrush(QBrush("#282B2A", Qt::Dense7Pattern));
 }
+
+// based on Qt wiki
 
 void GraphicsView::wheelEvent(QWheelEvent *event) {
     int numDegrees = event->delta() / 8;
