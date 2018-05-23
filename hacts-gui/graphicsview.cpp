@@ -7,7 +7,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
 {
     setDragMode(QGraphicsView::ScrollHandDrag);
 
-    setBackgroundBrush(QBrush("#282B2A", Qt::Dense7Pattern));
+    setBackgroundBrush(QBrush("#e8eBeA", Qt::Dense1Pattern));
 }
 
 // based on Qt wiki

@@ -426,6 +426,7 @@ int main(int argc, char *argv[]) {
     if(QString("-") == argv[2]) {
         output.open(stdout, QIODevice::WriteOnly);
     } else {
+        output.setFileName(argv[2]);
         if(! output.open(QIODevice::WriteOnly)) {
             cerr << "Failed to open " << argv[2] << " for writing: " << output.errorString() << "\n";
             return 1;

@@ -34,6 +34,8 @@ private:
     GraphicsView *view;
     QGraphicsScene *scene;
 
+    CarShape *carShape;
+
     QProcess *process;
     void processLine(const QString &line);
 };
