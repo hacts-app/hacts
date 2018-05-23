@@ -40,6 +40,7 @@ private:
     void processLine(const QString &line);
 
     void loadRoad();
+
 };
 
 #endif // MAINWINDOW_H

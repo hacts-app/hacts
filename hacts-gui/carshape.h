@@ -6,5 +6,5 @@
 class CarShape : public QGraphicsPolygonItem
 {
 public:
-    CarShape(QGraphicsItem *parent = nullptr);
+    CarShape(qreal width, qreal length, QGraphicsItem *parent = nullptr);
 };

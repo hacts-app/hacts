@@ -8,17 +8,17 @@
 #include <QPen>
 #include <QFile>
 #include <QTextStream>
+#include <QtMath>
 
 #include "carshape.h"
 
-static QPen pen;
+static qreal carwidth = 3.23, carheight = 4.02;
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    pen.setWidthF(0.1);
-
     ui->setupUi(this);
 
     process = new QProcess(this);
@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     view->setScene(scene);
     view->addBorder(10000);
 
-    carShape = new CarShape();
+    carShape = new CarShape(carwidth, carheight);
     scene->addItem(carShape);
 
     connect(process, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
@@ -62,16 +62,27 @@ void MainWindow::processReadyRead()
 
 void MainWindow::processLine(const QString &line)
 {
+    QPen pen;
+    pen.setWidthF(.25);
+
     //qDebug() << line;
     QStringList commandParts = line.split(" ");
 
     if(commandParts.value(0) == "movecar") {
+        double lastx = carShape->x();
+        double lasty = carShape->y();
         double x = commandParts.value(2).toDouble();
         double y = commandParts.value(3).toDouble();
         double angle = commandParts.value(4).toDouble();
+
+        if(!qFuzzyCompare(x, lastx) || !qFuzzyCompare(y, lasty)) {
+            scene->addLine(lastx, lasty, x, y, pen);
+        }
+
         carShape->setX(x);
         carShape->setY(y);
         carShape->setRotation(-90 + angle);
+
     }
 }
 
