@@ -38,6 +38,8 @@ private:
 
     QProcess *process;
     void processLine(const QString &line);
+
+    void loadRoad();
 };
 
 #endif // MAINWINDOW_H

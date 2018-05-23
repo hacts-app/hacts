@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QGridLayout>
 #include <QPen>
+#include <QFile>
+#include <QTextStream>
 
 #include "carshape.h"
 
@@ -40,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent) :
     scene->addItem(carShape);
 
     connect(process, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
+
+    loadRoad();
 }
 
 MainWindow::~MainWindow()
@@ -68,6 +72,24 @@ void MainWindow::processLine(const QString &line)
         carShape->setX(x);
         carShape->setY(y);
         carShape->setRotation(-90 + angle);
+    }
+}
+
+void MainWindow::loadRoad()
+{
+    QFile file("./data.txt");
+    if(! file.open(QIODevice::ReadOnly)) {
+        qWarning() << file.errorString();
+        return;
+    }
+    QTextStream stream(&file);
+    QString line;
+    while(stream.readLineInto(&line)) {
+        QStringList splitStr = line.split('\t');
+        QStringList coords = splitStr.value(3, "").split(",");
+        for(int i = 2; i < coords.length(); i += 2) {
+            scene->addLine(coords[i-2].toDouble(), coords[i-1].toDouble(), coords[i].toDouble(), coords[i+1].toDouble());
+        }
     }
 }
 
