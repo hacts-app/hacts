@@ -66,7 +66,7 @@ void MainWindow::processLine(const QString &line)
         double y = commandParts.value(3).toDouble();
         double angle = commandParts.value(4).toDouble();
         carShape->setX(x);
-        carShape->setY(-y);
+        carShape->setY(y);
         carShape->setRotation(-90 + angle);
     }
 }
