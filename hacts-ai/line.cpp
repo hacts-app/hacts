@@ -5,8 +5,8 @@
 bool Line::intersects(const Line &l, Point &intersectionPoint) const
 {
     // ipmlementation is based on Qt which is based on Graphics Gems III's "Faster Line Segment Intersection"
-    const Point a { pt2.x - pt1.x, pt1.y - pt1.y };
-    const Point b { l.pt2.x - l.pt1.x, l.pt1.y - l.pt2.y };
+    const Point a { pt2.x - pt1.x, pt2.y - pt1.y };
+    const Point b { l.pt1.x - l.pt2.x, l.pt1.y - l.pt2.y };
     const Point c { pt1.x - l.pt1.x, pt1.y - l.pt1.y };
 
     const double denominator = a.y * b.x - a.x * b.y;
