@@ -62,12 +62,14 @@ void MainWindow::processLine(const QString &line)
     qDebug() << line;
     QStringList commandParts = line.split(" ");
 
-    double x = commandParts.value(1).toDouble();
-    double y = commandParts.value(2).toDouble();
-    double angle = commandParts.value(3).toDouble();
-    carShape->setX(x);
-    carShape->setY(y);
-    carShape->setRotation(-90 + angle);
+    if(commandParts.value(0) == "movecar") {
+        double x = commandParts.value(2).toDouble();
+        double y = commandParts.value(3).toDouble();
+        double angle = commandParts.value(4).toDouble();
+        carShape->setX(x);
+        carShape->setY(y);
+        carShape->setRotation(-90 + angle);
+    }
 }
 
 void MainWindow::on_zoomInButton_clicked()
