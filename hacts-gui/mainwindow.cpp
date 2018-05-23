@@ -36,7 +36,10 @@ MainWindow::MainWindow(QWidget *parent) :
     view->setScene(scene);
     scene->addLine(0, 5, 10, 100, pen);
     scene->addLine(-3, 300, 100, 150, pen);
-    scene->addItem(new CarShape());
+
+
+    carShape = new CarShape();
+    scene->addItem(carShape);
 
     connect(process, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
 }
@@ -58,7 +61,13 @@ void MainWindow::processLine(const QString &line)
 {
     qDebug() << line;
     QStringList commandParts = line.split(" ");
-    qDebug() << commandParts[0];
+
+    double x = commandParts.value(1).toDouble();
+    double y = commandParts.value(2).toDouble();
+    double angle = commandParts.value(3).toDouble();
+    carShape->setX(x);
+    carShape->setY(y);
+    carShape->setRotation(-90 + angle);
 }
 
 void MainWindow::on_zoomInButton_clicked()
