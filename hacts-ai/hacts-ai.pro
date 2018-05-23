@@ -17,8 +17,10 @@ DESTDIR = $$_PRO_FILE_PWD_/../out
 
 SOURCES += \
         main.cpp \
-        lib.cpp
+        lib.cpp \
+    line.cpp
 
 HEADERS += \
-    lib.h
+    lib.h \
+    line.h
 
