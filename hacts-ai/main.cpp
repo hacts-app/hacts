@@ -5,7 +5,7 @@ using namespace std;
 
 clock_t bef;
 
-const int test_time =  33;
+const int test_time =  12;
 map<int, Road> roads;
 const string path = "data.txt";
 
@@ -21,7 +21,7 @@ int main()
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
-        golf3.onGasPush(0.75, bef);
+        golf3.onGasPush(1, bef);
 
         golf3.changePos(bef);
 
@@ -29,7 +29,7 @@ int main()
 
         bef = clock();
     }
-
+/*
     while(golf3.getX() < 500) // do 500 metrow utrzymanie predkosci
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
@@ -40,7 +40,7 @@ int main()
 
         bef = clock();
     }
-
+*/
     while(golf3.getV() > 2.7) // zwolnienie do 10 km/h
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
@@ -58,7 +58,7 @@ int main()
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
-        golf3.changeWheelAng(0.8, bef);
+        golf3.changeWheelAng(0.5, bef);
 
         golf3.changePos(bef);
 
@@ -71,7 +71,7 @@ int main()
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
-        golf3.changeWheelAng(-0.8, bef);
+        golf3.changeWheelAng(-0.5, bef);
 
         golf3.changePos(bef);
 
