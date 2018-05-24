@@ -8,6 +8,8 @@ GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     setDragMode(QGraphicsView::ScrollHandDrag);
+    scale(1, -1);
+
 
     setBackgroundBrush(QBrush("#e8eBeA", Qt::Dense1Pattern));
 }
