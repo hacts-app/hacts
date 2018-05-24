@@ -84,7 +84,7 @@ public:
 
     void givePos(); // informacje dla ui
 
-    vector<double> radar(vector<Way*> &ways);
+    vector<double> radar(vector<Way> &ways);
     // petla ktora liczy zblizone (pod stalymi katami) odleglosci od krawedzi drogi [POKI CO BRAK DETEKCJI INNYCH POJAZDOW]
 
     bool onRoad(vector<Node*> &hiWay, vector<Node*> &loWay);

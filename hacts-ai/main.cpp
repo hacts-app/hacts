@@ -11,13 +11,29 @@ const string path = "data.txt";
 
 int main()
 {
+    //clog << "TESTTIME"<<endl;
+
+    this_thread::sleep_for(chrono::milliseconds(4000));
     setRoads(path);
 
-    Car golf3(0, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7);
+    vector<double> result;
+
+    Car golf3(0, 1540, 350, 3.23, 0.315, 54, 0, 128, 520, 4.02, 1.7);
 
     bef = clock();
 
-    while(golf3.getV() < 16.6) // faza przyspieszania
+    golf3.changePos(bef);
+
+    golf3.givePos();
+
+    result = golf3.radar(roads[12].ways);
+
+    for(double umiemTakXD : result)
+    {
+        clog << umiemTakXD << endl;
+    }
+/*
+    while(golf3.getV() < 30) // faza przyspieszania
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
@@ -40,7 +56,7 @@ int main()
 
         bef = clock();
     }
-*/
+
     while(golf3.getV() > 2.7) // zwolnienie do 10 km/h
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
@@ -53,6 +69,7 @@ int main()
 
         bef = clock();
     }
+
 
     while(golf3.getAng() < 45) // poczatek skretu
     {
@@ -85,6 +102,7 @@ int main()
     golf3.AngTo(90);
     golf3.WAngTo(0);
 
+
     while(golf3.getV() < 54) // gaz do dechy na max V
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
@@ -110,7 +128,7 @@ int main()
 
         bef = clock();
     }
-
+*/
 
     return 0;
 }
