@@ -8,10 +8,13 @@ GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     setDragMode(QGraphicsView::ScrollHandDrag);
+
+    // flip the y axis
     scale(1, -1);
 
-
     setBackgroundBrush(QBrush("#e8eBeA", Qt::Dense1Pattern));
+
+    setRenderHints(QPainter::HighQualityAntialiasing | QPainter::SmoothPixmapTransform);
 }
 
 
