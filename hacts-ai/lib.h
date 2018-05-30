@@ -13,6 +13,7 @@
 
 
 using namespace std;
+using namespace chrono;
 
 #define PI 3.14159265
 
@@ -23,7 +24,7 @@ struct Road;
 
 extern map<int, Road> roads;
 
-clock_t delta_t(clock_t bef);
+int delta_t(system_clock::time_point bef);
 
 double radToDeg(double rad);
 
@@ -71,13 +72,13 @@ public:
     Car(int id, int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);
     // id, masa, max moment silnika, przelozenie, promien kola, max predkosc
 
-    void onGasPush(double trans, clock_t bef);
+    void onGasPush(double trans, system_clock::time_point bef);
     // trans od 0.00 do 1 to % wcisniecia gazu ... zakladamy ze aktywowane co sekunde
 
-    void onBrakePush(double per, clock_t bef);
+    void onBrakePush(double per, system_clock::time_point bef);
        // tak jak w gazie
 
-    void changeWheelAng(double intensity, clock_t bef);
+    void changeWheelAng(double intensity, system_clock::time_point bef);
        // od -1 do 1 .. ujemne skrecaja w prawo dodatnie w lewo
 
     void showPos(); // informacje dla nas
@@ -90,7 +91,7 @@ public:
     bool onRoad(vector<Node*> &hiWay, vector<Node*> &loWay);
     // sprawdza czy skrajne punkty (A,B,C,D) zawieraja sie w drodze po ktorej jedzie
 
-    void changePos(clock_t bef);
+    void changePos(system_clock::time_point bef);
         // zmiana pozycji i KĄTA
 
     void AngTo(double q) {angle = q;}

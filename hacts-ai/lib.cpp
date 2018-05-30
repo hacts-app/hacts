@@ -2,10 +2,12 @@
 #include "lib.h"
 
 using namespace std;
+using namespace chrono;
 
-clock_t delta_t(clock_t bef)
+int delta_t(system_clock::time_point bef)
 {
-    return clock() - bef;
+    system_clock::time_point now = system_clock::now();
+    return (now - bef).count() / 1000000; /// ???
 }
 
 double radToDeg(double rad)
@@ -61,6 +63,8 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
 
     // x stycznosci:
     double x = (b - bG) / (aG - a);
+    // policz y
+    double y = a*x + b;
 
     //czy x nalezy do dziedziny polprostej
     if((ang >= 0 && ang < 90) || (ang > 270 && ang < 360)) // x polprostej -> inf
@@ -75,19 +79,18 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     }
     else
     {
-        // policz y
-        double y = a*x + b;
+
         if(ang == 90 && y < yG)
             return 63;
 
-        if(y > yG)
+        if(ang == 270 && y > yG)
             return 64;
     }
 
     // czy x należy do dziedziny krawedzi
     if((x >= xA && x <=xB) || (x >= xB && x <=xA))
     {
-        return sqrt(pow((x - xG), 2) + pow((a*x + b - yG), 2)); // odleglosc auta od przeszkody
+        return sqrt(pow((x - xG), 2) + pow((y - yG), 2)); // odleglosc auta od przeszkody
     }
 
     return 75; // max zasieg wzroku
@@ -130,7 +133,7 @@ void setRoads(const string path)
 
         vector<string> coords = split(tmp[3], ',');
 
-        for(unsigned int i = 1; i < coords.size(); i++)
+        for(unsigned int i = 1; i < coords.size(); i+=2)
         {
             roads[nr].ways.back().points.push_back(new Node{stod(coords[i-1]), stod(coords[i])}); // dodawanie wszystkich wezlow do drogi
         }
@@ -186,7 +189,7 @@ Car::Car(int id, int m, double t, int tor, double r, double mv, double ang, doub
     wheelAng = 0;
 }
 
-void Car::onGasPush(double trans, clock_t bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
+void Car::onGasPush(double trans, system_clock::time_point bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
 {
     double transfer = max_transfer * trans;
 
@@ -200,7 +203,7 @@ void Car::onGasPush(double trans, clock_t bef) // trans od 0.00 do 1 to % wciœn
         velocity = max_velocity;
 }
 
-void Car::onBrakePush(double per, clock_t bef)
+void Car::onBrakePush(double per, system_clock::time_point bef)
 {
     const double max_acc = -9.59; // to chyba jest max opoznienie w hamowaniu
 
@@ -212,7 +215,7 @@ void Car::onBrakePush(double per, clock_t bef)
         velocity = 0;
 }
 
-void Car::changeWheelAng(double intensity, clock_t bef)
+void Car::changeWheelAng(double intensity, system_clock::time_point bef)
 {
     const int max_rot = 15 ; // maksymalna predkosc zmiany kata  kol w sekundzie
 
@@ -245,11 +248,11 @@ vector<double> Car::radar(vector<Way> &ways)
             case 5:
             case 6:
                 {
-                    ang = angle - (k * 15.0);
+                    ang = angle + (k * 15.0);
                 }break;
             case 7:
                 {
-                    ang = angle - 180.0;
+                    ang = angle + 180.0;
                 }break;
             case 8:
             case 9:
@@ -258,9 +261,11 @@ vector<double> Car::radar(vector<Way> &ways)
             case 12:
             case 13:
                 {
-                    ang = angle - (270 + (k-8)*15.0);
+                    ang = angle + (270 + (k-8)*15.0);
                 }
         }
+        while(ang >= 360)
+            ang-=360;
 
         for(unsigned int i = 0; i < ways.size(); i++)
         {
@@ -353,7 +358,7 @@ void Car::givePos()
     cout <<"movecar "<< carId <<" "<< x <<" "<< y <<" "<< angle <<endl;
 }
 
-void Car::changePos(clock_t bef)
+void Car::changePos(system_clock::time_point bef)
 {
 
     angle += radToDeg( (2 * velocity * sin(wheelAng * PI / 180.0)) / (length-0.6) ) * delta_t(bef) * 0.001;
