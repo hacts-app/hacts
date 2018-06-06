@@ -19,9 +19,9 @@ class Node:
     x = 0
     y = 0
 
-    def __init__(self, a, b):
-        self.x = a
-        self.y = b
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 
 class Way:
@@ -29,25 +29,25 @@ class Way:
     line = geometry.LineString()
     NeighboursID = []  # ints
 
-    def __init__(self, _id, pts, ngb):
-        self.id = _id
-        self.NeighboursID = ngb
+    def __init__(self, ID, points, neighbours):
+        self.id = ID
+        self.NeighboursID = neighbours
 
-        pt1 = geometry.Point(pts[0], pts[1])
-        pt2 = geometry.Point(pts[2], pts[3])
-        last = pt2
+        point1 = geometry.Point(points[0], points[1])
+        point2 = geometry.Point(points[2], points[3])
+        last = point2
 
-        self.line = geometry.LineString((pt1, pt2))
+        self.line = geometry.LineString((point1, point2))
 
-        ini = 2
-        for x, y in grouper(pts, 2):
-            if ini > 0:
-                ini -= 1
+        first_points = 2
+        for x, y in grouper(points, 2):
+            if first_points > 0:
+                first_points -= 1
                 continue
-            pt = geometry.Point(x, y)
-            new_line = geometry.LineString((last, pt))
+            point = geometry.Point(x, y)
+            new_line = geometry.LineString((last, point))
             self.line = self.line.union(new_line)
-            last = pt
+            last = point
 
 
 class Road:
@@ -128,19 +128,18 @@ class Car:
     length = 0
     width = 0
 
-                # id, masa, max mom silnika, przelozenie, promien kola, max predkosc, kat, x, y, dlugosc, szerokosc
-    def __init__(self, _id, m, t, tor, r, mv, ang, _x, _y, _len, wi):
-        self.carId = _id
-        self.mass = m
-        self.max_transfer = t
-        self.torque = tor
-        self.radius = r
-        self.max_velocity = mv
-        self.angle = ang
-        self.x = _x
-        self.y = _y
-        self.length = _len
-        self.width = wi
+    def __init__(self, ID, mass, m_transfer, torque, radius, max_velocity, angle, x, y, length, width):
+        self.carId = ID
+        self.mass = mass
+        self.max_transfer = m_transfer
+        self.torque = torque
+        self.radius = radius
+        self.max_velocity = max_velocity
+        self.angle = angle
+        self.x = x
+        self.y = y
+        self.length = length
+        self.width = width
 
     def onGasPush(self, trans, bef):  # trans od 0.00 do 1 to % wcisniecia gazu
         transfer = self.max_transfer * trans
@@ -176,7 +175,7 @@ class Car:
         elif self.wheelAng < -40:
             self.wheelAng = -40
 
-    def radar(self, ways):
+    def radar(self, ways) -> []:
         result = []
         angles = [0, 15, 30, 45, 60, 75, 90, 180, 270, 285, 300, 315, 330, 345]
         minimum = 60
