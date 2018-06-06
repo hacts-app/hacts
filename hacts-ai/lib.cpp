@@ -160,33 +160,30 @@ Node moveNode(double x, double y, double a, double R)
 }
 
 Car::Car(int id, int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi)
-              // masa, ,max moment silnika, przelozenie, promien kola, max predkosc
+           //id, masa, ,max moment silnika, przelozenie, promien kola, max predkosc
 {
     carId = id;
-
     mass = m;
-
     max_transfer = t;
-
     torque = tor;
-
     radius = r;
-
     max_velocity = mv;
-
     angle = ang;
-
     x = _x;
-
     y = _y;
-
     velocity = 0;
-
     length = len;
-
     width = wi;
-
     wheelAng = 0;
+ /*
+    for(int i = 0; i < 4; i++)
+    {
+        Point* pt =
+
+
+    }
+
+  */
 }
 
 void Car::onGasPush(double trans, system_clock::time_point bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde

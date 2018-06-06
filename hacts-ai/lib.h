@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <ctime>
 #include <vector>
@@ -10,6 +11,7 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <line.h>
 
 
 using namespace std;
@@ -67,6 +69,7 @@ private:
     double x,y;
     double length;
     double width;
+    vector<Point*> corners;
 
 public:
     Car(int id, int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);

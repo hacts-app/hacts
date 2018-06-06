@@ -14,18 +14,10 @@ int main()
 {
     bef = system_clock::now();
     this_thread::sleep_for(milliseconds(4000));
-    clog << delta_t(bef);
 
-
-    setRoads(path);
-
-    //clog << "TESTTIME"<<endl;
-
-    this_thread::sleep_for(milliseconds(4000));
     setRoads(path);
 
     vector<double> radar;
-    vector<int> angles {0, 15, 30, 45, 60, 75, 90, 180, 270, 285, 300, 315, 330, 345};
 
     Car golf3(0, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7); // xy 128, 520
 
@@ -55,7 +47,7 @@ int main()
 
         bef = system_clock::now();
     }
-
+/*
     while(golf3.getX() < 500) // do 500 metrow utrzymanie predkosci
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
@@ -181,6 +173,6 @@ int main()
         bef = system_clock::now();
     }
 
-
+*/
     return 0;
 }
