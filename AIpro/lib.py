@@ -216,7 +216,7 @@ class Car:
         return True
 
     def givePos(self):
-        print("movecar " + str(self.carId) + " " + str(self.x) + " " + str(self.y) + " " + str(self.angle))
+        print("movecar " + str(self.carId) + " " + str(self.x) + " " + str(self.y) + " " + str(self.angle), flush=True)
 
     def changePos(self, bef):
         self.angle += radToDeg((2 * self.velocity * sin(self.wheelAng * PI / 180.0)) / (self.length - 0.6)) * delta_t(bef)

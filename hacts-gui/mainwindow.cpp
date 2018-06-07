@@ -22,12 +22,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     process = new QProcess(this);
-    //process->setWorkingDirectory(r("../hacts-ai/"));
 
+    process->setWorkingDirectory("../AIpro");
 #ifdef Q_OS_WIN
-    process->start("./hacts-ai.exe");
+
+    process->start("venv/bin/python3.exe", {"main.py"});
 #else
-    process->start("./hacts-ai");
+    process->start("python3", {"main.py"});
 #endif
 
 
@@ -57,6 +58,7 @@ void MainWindow::processReadyRead()
     while(process->canReadLine()) {
         QString line(process->readLine());
         processLine(line);
+        qDebug() << line;
     }
 }
 
