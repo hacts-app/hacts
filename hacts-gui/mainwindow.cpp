@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     process->setWorkingDirectory("../AIpro");
 #ifdef Q_OS_WIN
 
-    process->start("venv/bin/python3.exe", {"main.py"});
+    process->start("venv\\scripts\\python.exe", {"main.py"});
 #else
     process->start("python3", {"main.py"});
 #endif
