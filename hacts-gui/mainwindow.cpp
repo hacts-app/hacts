@@ -23,12 +23,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     process = new QProcess(this);
 
-    process->setWorkingDirectory("../AIpro");
-
 #ifdef Q_OS_WIN
-    process->start("cmd", {"/c", "venv\\scripts\\python.exe", "main.py"});
+    process->start("hacts-ai.exe");
 #else
-    process->start("python3", {"main.py"});
+    process->start("./hacts-ai");
 #endif
 
 
