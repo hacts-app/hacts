@@ -86,6 +86,10 @@ bool check_inter(Node A, Node B, Node C) // sprawdzanie czy krawedz nie nalezy d
     return false;
 }
 
+static inline float fastTan(const float a) {
+        return sin(a) / cos(a);
+}
+
 double dist(double ang, double xG, double yG, double xA, double yA, double xB, double yB)
 {
     // wyliczanie prostej przechodzacej przez A i B
@@ -94,7 +98,7 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     double b = yA - a*xA;
 
     // wyliczanie prostej radarowej
-    double aG = tan(ang * PI / 180.0);
+    double aG = fastTan(ang * PI / 180.0);
 
     double bG = yG - aG*xG;
 
@@ -267,8 +271,8 @@ vector<double> Car::radar(vector<Way> &ways)
         else
             ang = angle + (270 + (k-8) * 15.0);
 
-        while(ang >= 360)
-            ang-=360;
+        //while(ang >= 360)
+        //    ang-=360;
 
         for(const Way &way : ways)
         {
