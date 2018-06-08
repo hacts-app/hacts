@@ -56,7 +56,7 @@ void MainWindow::processReadyRead()
     while(process->canReadLine()) {
         QString line(process->readLine());
         processLine(line);
-        qDebug() << line;
+//        qDebug() << line;
     }
 }
 
