@@ -130,7 +130,7 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     // czy x należy do dziedziny krawedzi
     if((x >= xA && x <=xB) || (x >= xB && x <=xA))
     {
-        return sqrt(pow((x - xG), 2) + pow((y - yG), 2)); // odleglosc auta od przeszkody
+        return sqrt((x - xG)*(x - xG) + (y - yG)*(y - yG)); // odleglosc auta od przeszkody
     }
 
     return 60; // max zasieg wzroku
@@ -270,7 +270,7 @@ vector<double> Car::radar(vector<Way> &ways)
         while(ang >= 360)
             ang-=360;
 
-        for(Way way : ways)
+        for(const Way &way : ways)
         {
             for(unsigned int j = 1; j < way.points.size(); j++)
             {
@@ -316,7 +316,7 @@ bool Car::onRoad(vector<Way> &ways)
 
     car_borders.update(carCorners);
 
-    for(Way way: ways)
+    for(const Way &way: ways)
     {
         for(int i = 1; i < way.points.size(); i++)
         {
