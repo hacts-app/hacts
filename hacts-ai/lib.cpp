@@ -368,7 +368,7 @@ bool Rectangle::intersection(Node A, Node B)
                 v4 = geo_vector(A, B, D);
 
             // sprawdzanie czy odcinki sie przecinaja
-        if((v1*v2 < 0 && v3*v4 < 0) || ((v1>0&&v2<0||v1<0&&v2>0) && (v3>0&&v4<0||v3<0&&v4>0)))
+        if((v1*v2 < 0 && v3*v4 < 0) || (((v1>0 && v2<0) || (v1<0 && v2>0)) && ((v3>0 && v4<0) || (v3<0 && v4>0))))
             return true;
 
             // sprawdzanie czy odcinki sie nie lacza ( czy skrajny punkt jednego nie nalezy do odcinka drugiego)
@@ -378,6 +378,7 @@ bool Rectangle::intersection(Node A, Node B)
            (v4 == 0 && check_inter(A, B, D)))
         return true;
         // odcinki nie maja punktow wspolnych
-        return false;
+
     }
+    return false;
 }
