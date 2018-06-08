@@ -39,15 +39,13 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-        for(double x : radar)
-        {
-            if(fabs(x) < 1)
-                return 0;
-        }
+
+        if(!golf3.onRoad(roads[12].ways))
+            return 0;
 
         bef = system_clock::now();
     }
-/*
+
     while(golf3.getX() < 500) // do 500 metrow utrzymanie predkosci
     {
         this_thread::sleep_for(chrono::milliseconds(test_time));
@@ -57,11 +55,9 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-        for(double x : radar)
-        {
-            if(fabs(x) < 1)
-                return 0;
-        }
+
+        if(!golf3.onRoad(roads[12].ways))
+            return 0;
 
         bef = system_clock::now();
     }
@@ -77,11 +73,9 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-        for(double x : radar)
-        {
-            if(fabs(x) < 1)
-                return 0;
-        }
+
+        if(!golf3.onRoad(roads[12].ways))
+            return 0;
 
         bef = system_clock::now();
     }
@@ -98,11 +92,9 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-        for(double x : radar)
-        {
-            if(fabs(x) < 1)
-                return 0;
-        }
+
+        if(!golf3.onRoad(roads[12].ways))
+            return 0;
 
         bef = system_clock::now();
     }
@@ -118,11 +110,9 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-        for(double x : radar)
-        {
-            if(fabs(x) < 1)
-                return 0;
-        }
+
+        if(!golf3.onRoad(roads[12].ways))
+            return 0;
 
         bef = system_clock::now();
     }
@@ -144,11 +134,9 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-        for(double x : radar)
-        {
-            if(fabs(x) < 1)
-                return 0;
-        }
+
+        if(!golf3.onRoad(roads[12].ways))
+            return 0;
 
         bef = system_clock::now();
     }
@@ -164,15 +152,13 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-        for(double x : radar)
-        {
-            if(fabs(x) < 1)
-                return 0;
-        }
+
+        if(!golf3.onRoad(roads[12].ways))
+            return 0;
 
         bef = system_clock::now();
     }
 
-*/
+
     return 0;
 }

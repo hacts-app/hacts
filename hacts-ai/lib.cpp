@@ -4,10 +4,10 @@
 using namespace std;
 using namespace chrono;
 
-int delta_t(system_clock::time_point bef)
+double delta_t(system_clock::time_point bef)
 {
     system_clock::time_point now = system_clock::now();
-    return (now - bef).count() / 1000000; /// ???
+    return (now - bef).count() / 1000000000.0; /// ???
 }
 
 double radToDeg(double rad)
@@ -18,6 +18,28 @@ double radToDeg(double rad)
 double degToRad(double deg)
 {
     return (PI * deg) / 180.0;
+}
+
+vector<int> vec_stoi(vector<string> x)
+{
+    vector<int> loc;
+
+    for(string element: x)
+    {
+        loc.push_back(stoi(element));
+    }
+    return loc;
+}
+
+vector<double> vec_stod(vector<string> x)
+{
+    vector<double> loc;
+
+    for(string element: x)
+    {
+        loc.push_back(stod(element));
+    }
+    return loc;
 }
 
 template<typename Out>
@@ -39,11 +61,29 @@ vector<string> split(const string &s, char delim)
 
     return elems;
 }
+
 template<typename T>
 void push_back2(vector<T> &v, T &elem1, T &elem2)
 {
     v.push_back(&elem1);
     v.push_back(&elem2);
+}
+
+double geo_vector(Node A, Node B, Node C) // tworzenie iloczynu wektorowego
+{
+    double 	x1 = C.x - A.x,
+            y1 = C.y - A.y,
+            x2 = B.x - A.x,
+            y2 = B.y - A.y;
+    return x1*y2 - x2*y1;
+}
+
+bool check_inter(Node A, Node B, Node C) // sprawdzanie czy krawedz nie nalezy do drugiego odcinka
+{
+    if(min(A.x, B.x) <= C.x && C.x <= max(A.x, B.x) &&
+       min(A.y, B.y) <= C.y && C.y <= max(A.y, B.y))
+        return true;
+    return false;
 }
 
 double dist(double ang, double xG, double yG, double xA, double yA, double xB, double yB)
@@ -59,7 +99,7 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     double bG = yG - aG*xG;
 
     if(a == aG) // jezeli sa rownolegle nie maja punktow stcznosci
-        return 70;
+        return 60;
 
     // x stycznosci:
     double x = (b - bG) / (aG - a);
@@ -70,21 +110,21 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     if((ang >= 0 && ang < 90) || (ang > 270 && ang < 360)) // x polprostej -> inf
     {
         if(x < xG) // jesli punkt jest na lewo to nie ma
-            return 61;
+            return 60;
     }
     else if((ang > 90 && ang <= 180) || (ang > 180 && ang < 270)) // x polprostej -> -inf
     {
         if(x > xG)
-            return 62;
+            return 60;
     }
     else
     {
 
         if(ang == 90 && y < yG)
-            return 63;
+            return 60;
 
         if(ang == 270 && y > yG)
-            return 64;
+            return 60;
     }
 
     // czy x należy do dziedziny krawedzi
@@ -93,65 +133,37 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
         return sqrt(pow((x - xG), 2) + pow((y - yG), 2)); // odleglosc auta od przeszkody
     }
 
-    return 75; // max zasieg wzroku
+    return 60; // max zasieg wzroku
 }
 
 void setRoads(const string path)
 {
     fstream file;
     string medium;
-    vector<string> data;
 
     file.open(path, ios::in);
 
     while(getline(file, medium))
     {
-        data.push_back(medium);
-    }
+        vector<string> elements;
 
-    for(string x : data)
-    {
-        vector<string> tmp;
+        elements = split(medium, '\t');
 
-        tmp = split(x, '\t');
+        int nr = stoi(elements[1]);
 
-        // tmp contains {NameOfWay, NameOfRoad, NeighboursOfWay, NodesOfWay};
+        roads[nr].ways.push_back(Way{stoi(elements[0])}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
 
-        int nr = stoi(tmp[1]);
+        vector<int> neighbours= vec_stoi(split(elements[2], ','));
 
-        roads[nr].ways.push_back(Way{stoi(tmp[0])}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
+        roads[nr].ways.back().neighboursId = neighbours;
 
-        vector<string> tmpv= split(tmp[2], ',');
-        vector<int> neighbrs;
-
-        for(string z : tmpv)
-        {
-            neighbrs.push_back(stoi(z));
-        }
-
-        roads[nr].ways.back().neighboursId = neighbrs;
-
-        vector<string> coords = split(tmp[3], ',');
+        vector<double> coords = vec_stod(split(elements[3], ','));
 
         for(unsigned int i = 1; i < coords.size(); i+=2)
         {
-            roads[nr].ways.back().points.push_back(new Node{stod(coords[i-1]), stod(coords[i])}); // dodawanie wszystkich wezlow do drogi
+            roads[nr].ways.back().points.push_back(Node{coords[i-1], coords[i]}); // dodawanie wszystkich wezlow do drogi
         }
     }
-}
-
-bool upOrDown(Node* &A, Node* &B, Node P)
-{
-    // wyliczanie prostej przechodzacej przez A i B
-    double a = (A->y - B->y) / (A->x - B->x);
-
-    double b = A->y - a * A->x;
-
-    if(P.y > (a*P.x + b)) // powyzej
-        return true;
-
-    return false; // ponizej i na
-
 }
 
 Node moveNode(double x, double y, double a, double R)
@@ -159,31 +171,44 @@ Node moveNode(double x, double y, double a, double R)
     return Node{x + sin(a * PI / 180.0) * R, y +cos(a * PI / 180.0) * R};
 }
 
-Car::Car(int id, int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi)
-           //id, masa, ,max moment silnika, przelozenie, promien kola, max predkosc
+Car::Car(int id, int mass, double transfer, int torque, double radius, double max_velocity,
+         double angle, double _x, double _y, double length, double width)
+    : car_borders({Node{0,0}})
 {
     carId = id;
-    mass = m;
-    max_transfer = t;
-    torque = tor;
-    radius = r;
-    max_velocity = mv;
-    angle = ang;
+    this->mass = mass;
+    max_transfer = transfer;
+    this->torque = torque;
+    this->radius = radius;
+    this->max_velocity = max_velocity;
+    this->angle = angle;
     x = _x;
     y = _y;
     velocity = 0;
-    length = len;
-    width = wi;
+    this->length = length;
+    this->width = width;
     wheelAng = 0;
- /*
-    for(int i = 0; i < 4; i++)
-    {
-        Point* pt =
 
+    double R = (sqrt(pow(length, 2) + pow(width, 2))) / 2;
+    // promien okregu opisanego na samochodzie
 
-    }
+    double alpha = acos(1-(pow(width, 2)) / (2 * pow(R, 2))) * 180.0 / PI;
+    // kat miedzy dwoma R-ami naprzeciwko szerokosci pojazdu
 
-  */
+    double a1 = tan((angle + alpha/2) * PI / 180.0);
+    // kierunkowa 1 R
+
+    double a2 = tan((angle - alpha/2) * PI / 180.0);
+    // kierunkowa 2 R
+
+    vector<Node> carCorners{
+        moveNode(x, y, a1, R),
+        moveNode(x, y, a2, R),
+        moveNode(x, y, a1, -R),
+        moveNode(x, y, a2, -R),
+    }; // ABCD ...
+
+    car_borders.update(carCorners);
 }
 
 void Car::onGasPush(double trans, system_clock::time_point bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
@@ -194,7 +219,7 @@ void Car::onGasPush(double trans, system_clock::time_point bef) // trans od 0.00
 
     acceleration = F / mass;
 
-    velocity += (acceleration * delta_t(bef) * 0.001); // kom
+    velocity += (acceleration * delta_t(bef));
 
     if(velocity > max_velocity)
         velocity = max_velocity;
@@ -206,7 +231,7 @@ void Car::onBrakePush(double per, system_clock::time_point bef)
 
     acceleration = max_acc * per;
 
-    velocity += (acceleration * delta_t(bef) * 0.001);  //kom
+    velocity += (acceleration * delta_t(bef));
 
     if(velocity < 0)            // hamulec nie jest biegiem wstecznym
         velocity = 0;
@@ -218,7 +243,7 @@ void Car::changeWheelAng(double intensity, system_clock::time_point bef)
 
     double rot = max_rot * intensity;
 
-    wheelAng += (rot * delta_t(bef) * 0.001);
+    wheelAng += (rot * delta_t(bef));
 
     if(wheelAng > 40)
         wheelAng = 40;
@@ -235,44 +260,25 @@ vector<double> Car::radar(vector<Way> &ways)
     {
         double ang;
 
-        switch(k)
-        {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-                {
-                    ang = angle + (k * 15.0);
-                }break;
-            case 7:
-                {
-                    ang = angle + 180.0;
-                }break;
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-                {
-                    ang = angle + (270 + (k-8)*15.0);
-                }
-        }
+        if(k < 7)
+            ang = angle + (k * 15.0);
+        else if(k == 7)
+            ang = angle + 180.0;
+        else
+            ang = angle + (270 + (k-8) * 15.0);
+
         while(ang >= 360)
             ang-=360;
 
-        for(unsigned int i = 0; i < ways.size(); i++)
+        for(Way way : ways)
         {
-            for(unsigned int j = 1; j < ways[i].points.size(); j++)
+            for(unsigned int j = 1; j < way.points.size(); j++)
             {
-                double xA = ways[i].points[j-1]->x;
-                double yA = ways[i].points[j-1]->y;
+                double xA = way.points[j-1].x;
+                double yA = way.points[j-1].y;
 
-                double xB = ways[i].points[j]->x;
-                double yB = ways[i].points[j]->y;
+                double xB = way.points[j].x;
+                double yB = way.points[j].y;
 
                 double tmp = dist(ang, x, y, xA, yA, xB, yB);
 
@@ -287,7 +293,7 @@ vector<double> Car::radar(vector<Way> &ways)
     return result;
 }
 
-bool Car::onRoad(vector<Node*> &hiWay, vector<Node*> &loWay)
+bool Car::onRoad(vector<Way> &ways)
 {
     double R = (sqrt(pow(length, 2) + pow(width, 2))) / 2;
     // promien okregu opisanego na samochodzie
@@ -301,47 +307,27 @@ bool Car::onRoad(vector<Node*> &hiWay, vector<Node*> &loWay)
     double a2 = tan((angle - alpha/2) * PI / 180.0);
     // kierunkowa 2 R
 
-    vector<Node> carCorners; // ABCD ...
+    vector<Node> carCorners{
+        moveNode(x, y, a1, R),
+        moveNode(x, y, a2, R),
+        moveNode(x, y, a1, -R),
+        moveNode(x, y, a2, -R),
+    }; // ABCD ...
 
-    carCorners.push_back(moveNode(x, y, a1, R));
+    car_borders.update(carCorners);
 
-    carCorners.push_back(moveNode(x, y, a2, R));
-
-    carCorners.push_back(moveNode(x, y, a1, -R));
-
-    carCorners.push_back(moveNode(x, y, a2, -R));
-
-    for(Node i : carCorners)
+    for(Way way: ways)
     {
-        bool firstVerif;
-        bool secondVerif;
-
-        for(unsigned int j = 1; j < loWay.size(); j++)
+        for(int i = 1; i < way.points.size(); i++)
         {
-            // szukanie 2 nodow miedzy ktorymi sie znajduje dany punkt
-            if((i.x >= loWay[j]->x && i.x <= loWay[j-1]->x) || (i.x >= loWay[j-1]->x && i.x <= loWay[j]->x))
-            {
-                firstVerif = upOrDown(loWay[j], loWay[j-1], i);
+            Node A = way.points[i-1];
+            Node B = way.points[i];
 
-                break;
-            }
-        } // loWay
+            if(car_borders.intersection(A, B)) // jesli przeciecie zwraca prawde
+                return false;                   // to auto nie jest na drodze
 
-        for(unsigned int j = 1; j < hiWay.size(); j++)
-        {
-            // szukanie 2 nodow miedzy ktorymi sie znajduje dany punkt
-            if((i.x >= hiWay[j]->x && i.x <= hiWay[j-1]->x) || (i.x >= hiWay[j-1]->x && i.x <= hiWay[j]->x))
-            {
-                secondVerif = upOrDown(hiWay[j], hiWay[j-1], i);
-
-                break;
-            }
-        } // hiWay
-
-        if(firstVerif == secondVerif) // jesli samochod bedzie pod lub nad obiema krawedziami naraz to wyjechal
-            return false;
+        }
     }
-
     return true;
 }
 
@@ -357,8 +343,7 @@ void Car::givePos()
 
 void Car::changePos(system_clock::time_point bef)
 {
-
-    angle += radToDeg( (2 * velocity * sin(wheelAng * PI / 180.0)) / (length-0.6) ) * delta_t(bef) * 0.001;
+    angle += radToDeg( (2 * velocity * sin(wheelAng * PI / 180.0)) / (length-0.6) ) * delta_t(bef);
 
     if(angle > 360)
         angle -= 360;
@@ -366,9 +351,33 @@ void Car::changePos(system_clock::time_point bef)
     if(angle < 0)
         angle += 360;
 
-    x += (velocity * cos((angle) * PI / 180.0) * delta_t(bef) * 0.001);
+    x += (velocity * cos((angle) * PI / 180.0) * delta_t(bef));
 
-    y += (velocity * sin((angle) * PI / 180.0) * delta_t(bef) * 0.001 );
+    y += (velocity * sin((angle) * PI / 180.0) * delta_t(bef));
+}
 
+bool Rectangle::intersection(Node A, Node B)
+{
+    for(int i = 1; i < 4; i++)
+    {
+        Node C = corners[i-1];
+        Node D = corners[i];
+        double 	v1 = geo_vector(C, D, A),
+                v2 = geo_vector(C, D, B),
+                v3 = geo_vector(A, B, C),
+                v4 = geo_vector(A, B, D);
 
+            // sprawdzanie czy odcinki sie przecinaja
+        if((v1*v2 < 0 && v3*v4 < 0) || ((v1>0&&v2<0||v1<0&&v2>0) && (v3>0&&v4<0||v3<0&&v4>0)))
+            return true;
+
+            // sprawdzanie czy odcinki sie nie lacza ( czy skrajny punkt jednego nie nalezy do odcinka drugiego)
+        if((v1 == 0 && check_inter(C, D, A))||
+           (v2 == 0 && check_inter(C, D, B))||
+           (v3 == 0 && check_inter(A, B, C))||
+           (v4 == 0 && check_inter(A, B, D)))
+        return true;
+        // odcinki nie maja punktow wspolnych
+        return false;
+    }
 }
