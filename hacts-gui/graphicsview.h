@@ -11,7 +11,7 @@ class GraphicsView : public QGraphicsView
 
 public:
     explicit GraphicsView(QWidget *parent = nullptr);
-    void scrollZoom(int numSteps);
+    void scrollZoom(int numSteps, bool byWheel = false);
     void addBorder(qreal diameter);
 
 protected:

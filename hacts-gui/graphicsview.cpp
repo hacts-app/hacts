@@ -38,7 +38,7 @@ void GraphicsView::addBorder(qreal diameter)
 void GraphicsView::wheelEvent(QWheelEvent *event) {
     int numDegrees = event->delta() / 8;
     int numSteps = numDegrees / 15; // see QWheelEvent documentation
-    scrollZoom(numSteps);
+    scrollZoom(numSteps, true);
 }
 
 void GraphicsView::scalingTime(qreal x) {
@@ -48,14 +48,18 @@ void GraphicsView::scalingTime(qreal x) {
 }
 
 void GraphicsView::animFinished() {
-    if (numScheduledScalings > 0)
-        numScheduledScalings--;
-    else
-        numScheduledScalings++;
+    numScheduledScalings = 0;
+//    if (numScheduledScalings > 0)
+//        numScheduledScalings--;
+//    else
+//        numScheduledScalings++;
     sender()->deleteLater();
 }
 
-void GraphicsView::scrollZoom(int numSteps) {
+void GraphicsView::scrollZoom(int numSteps, bool byWheel) {
+    if(!byWheel)
+        numScheduledScalings = 0;
+
     numScheduledScalings += numSteps;
     if (numScheduledScalings * numSteps < 0) // if user moved the wheel in another direction, we reset previously scheduled scalings
         numScheduledScalings = numSteps;
