@@ -139,8 +139,8 @@ struct Node
 struct Way
 {
     int id;
-    vector<int> neighboursId;
-    vector<Node> points;
+    vector<int> neighboursId = {};
+    vector<Node> points = {};
 };
 
 struct Road
