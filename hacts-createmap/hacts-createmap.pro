@@ -16,5 +16,5 @@ TARGET = hacts-createmap
 TEMPLATE = app
 
 SOURCES += \
-        main.cpp
+    main.cpp
 

@@ -28,15 +28,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
+    main.cpp \
+    mainwindow.cpp \
     graphicsview.cpp \
     carshape.cpp
 
 HEADERS += \
-        mainwindow.h \
+    mainwindow.h \
     graphicsview.h \
     carshape.h
 
 FORMS += \
-        mainwindow.ui
+    mainwindow.ui

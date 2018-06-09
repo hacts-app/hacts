@@ -16,8 +16,8 @@ QMAKE_CXXFLAGS += -std=gnu++17
 DESTDIR = $$_PRO_FILE_PWD_/../out
 
 SOURCES += \
-        main.cpp \
-        lib.cpp \
+    main.cpp \
+    lib.cpp \
     line.cpp
 
 HEADERS += \
