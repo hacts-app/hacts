@@ -4,10 +4,13 @@
 #include <QMainWindow>
 #include <QProcess>
 #include <QGraphicsScene>
+#include <QMap>
+#include <QStandardItemModel>
 
 #include "graphicsview.h"
 #include "carshape.h"
 
+using CarID = qint64;
 
 namespace Ui {
 class MainWindow;
@@ -30,11 +33,13 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QStandardItemModel *treeModel;
 
     GraphicsView *view;
     QGraphicsScene *scene;
 
-    CarShape *carShape;
+    QMap<CarID, CarShape *> cars;
+    CarShape *getCarById(CarID id);
 
     QProcess *process;
     void processLine(const QString &line);

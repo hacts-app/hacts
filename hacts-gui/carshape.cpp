@@ -5,8 +5,9 @@
 #include <QColor>
 #include <QPen>
 
-CarShape::CarShape(qreal width, qreal length, QGraphicsItem *parent) :
-    QGraphicsPolygonItem(parent)
+CarShape::CarShape(qint64 id, qreal width, qreal length, QGraphicsItem *parent) :
+    QGraphicsPolygonItem(parent),
+    id(id)
 {
     const qreal halfwidth = width/2, halflength = length/2;
 

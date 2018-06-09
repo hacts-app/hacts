@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QtMath>
+#include <QStandardItem>
 
 #include "carshape.h"
 
@@ -20,6 +21,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    treeModel = new QStandardItemModel(this);
+    treeModel->invisibleRootItem()->appendRow(new QStandardItem("Samochody"));
+    ui->treeView->setModel(treeModel);
+    ui->treeView->setExpanded(treeModel->index(0, 0), true);
 
     process = new QProcess(this);
 
@@ -37,9 +43,6 @@ MainWindow::MainWindow(QWidget *parent) :
     view->setScene(scene);
     view->addBorder(10000);
 
-    carShape = new CarShape(carwidth, carheight);
-    scene->addItem(carShape);
-
     connect(process, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
 
     loadRoad();
@@ -47,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    process->close();
+
     delete ui;
 }
 
@@ -56,7 +61,7 @@ void MainWindow::processReadyRead()
     while(process->canReadLine()) {
         QString line(process->readLine());
         processLine(line);
-//        qDebug() << line;
+        //        qDebug() << line;
     }
 }
 
@@ -69,6 +74,9 @@ void MainWindow::processLine(const QString &line)
     QStringList commandParts = line.split(" ");
 
     if(commandParts.value(0) == "movecar") {
+        CarID id = commandParts.value(1).toLongLong();
+        CarShape *carShape = getCarById(id);
+
         double lastx = carShape->x();
         double lasty = carShape->y();
         double x = commandParts.value(2).toDouble();
@@ -112,4 +120,25 @@ void MainWindow::on_zoomInButton_clicked()
 void MainWindow::on_zoomOutButton_clicked()
 {
     view->scrollZoom(-10);
+}
+
+CarShape *MainWindow::getCarById(CarID id)
+{
+    if(cars.contains(id)) {
+        return cars.value(id);
+    }
+
+    // this is the first time we've seen this car.
+    CarShape *carShape = new CarShape(id, carwidth, carheight);
+    cars[id] = carShape;
+
+    scene->addItem(carShape);
+
+    treeModel->item(0, 0)->appendRow(
+        new QStandardItem(
+            QString("Samochód ") + QString::number(id)
+        )
+    );
+
+    return carShape;
 }
