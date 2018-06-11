@@ -1,70 +1,83 @@
+#include <iostream>
+
 #include "inputhandler.h"
 
-InputHandler::InputHandler() :
-    inputReadingThread(onInputThread)
+
+InputHandler::InputHandler()
 {
+    threadObject = new InputHandlerThread;
+
+    // Assign shared pointers
+    threadObject->command = command;
+    threadObject->end_thread = end_thread;
+    threadObject->has_command = has_command;
+    threadObject->mutex = mutex;
+    threadObject->processed_command = processed_command;
+
+    // start the thread
+    inputReadingThread = new std::thread(*threadObject);
 }
 
 InputHandler::~InputHandler()
 {
     // std::thread kills the whole program if we don't either .detach() its thread
     // from it or wait for its completion using .join()
-    inputReadingThread.detach();
+    inputReadingThread->detach();
+    delete inputReadingThread;
 
-    std::lock_guard<std::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(*mutex);
 
-    // tell onInputThread() to return
-    if(end_thread)
-        *end_thread = true;
+    // tell onInputThread() to return and delete itself
+    *end_thread = true;
 
     // If onInputThread() is waiting on processed_command until getAvailableInput()
     // is called, make it advance to if(end_thread)
-    processed_command.notify_all();
+    processed_command->notify_all();
 }
 
 bool InputHandler::getAvailableInput(std::string &command) {
-    std::lock_guard<std::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(*mutex);
 
     // Has anything been read since last call?
-    if(! has_command)
+    if(*has_command == false)
         return false;
 
-    command = this->command;
+    command = *this->command;
 
-    has_command = false;
+    *has_command = false;
 
     // tell inputThread to read next line
-    processed_command.notify_all();
+    processed_command->notify_all();
 
     return true;
 }
 
-void InputHandler::onInputThread() {
-    // Give InputHandler a way to notify us of destruction that doesn't go away on end of object's lifetime
-    bool end_thread = false;
-    this->end_thread = &end_thread;
 
+// InputHandlerThread:
+
+void InputHandler::InputHandlerThread::run() {
     std::string command;
-    while(std::getline(cin, command)) {
+    while(std::getline(std::cin, command)) {
 
         // TODO: parse command here...
 
-        // check if we are still alive and can actually take a lock
-        if(end_thread) return;
-
         // take lock
-        std::unique_lock<std::mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(*mutex);
 
         // check again with the lock taken
-        if(end_thread) return;
+        if(*end_thread) return;
 
         // Give the read command
-        this->command = command;
+        *this->command = command;
+        *has_command = true;
 
         // wait for the main thread to process the command, unblocking comman_mutex
-        processed_command.wait(lock);
+        processed_command->wait(lock);
 
         // Check again, maybe we were destroyed
-        if(end_thread) return;
+        if(*end_thread) return;
     }
+
+    // The thread has ended
+    delete this;
 }

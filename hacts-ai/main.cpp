@@ -14,10 +14,8 @@ const string path = "data.txt";
 
 static void processCommand(InputHandler &inputHandler) {
     std::string command;
-    if(! inputHandler.getAvailableInput(command))
-        return;
-
-    std::clog << "Received " << command;
+    while(inputHandler.getAvailableInput(command))
+        std::clog << "Received " << command;
 }
 
 int main()
