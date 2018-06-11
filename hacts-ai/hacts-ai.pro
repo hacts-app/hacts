@@ -18,9 +18,11 @@ DESTDIR = $$_PRO_FILE_PWD_/../out
 SOURCES += \
     main.cpp \
     lib.cpp \
-    line.cpp
+    line.cpp \
+    inputhandler.cpp
 
 HEADERS += \
     lib.h \
-    line.h
+    line.h \
+    inputhandler.h
 
