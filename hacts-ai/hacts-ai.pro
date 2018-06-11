@@ -26,3 +26,4 @@ HEADERS += \
     line.h \
     inputhandler.h
 
+CONFIG += console
