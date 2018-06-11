@@ -34,7 +34,7 @@ private:
     class InputHandlerThread
     {
     public:
-        void operator()() { run(); }
+        void operator()();
 
         /*
          * Variables shared with InputHandler, documentation in InputHandler

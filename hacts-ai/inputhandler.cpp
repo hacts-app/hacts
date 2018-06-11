@@ -55,6 +55,13 @@ bool InputHandler::getAvailableInput(std::string &command) {
 
 // InputHandlerThread:
 
+void InputHandler::InputHandlerThread::operator()() {
+    run();
+
+    // the thread has ended, we aren't needed anymore
+    delete this;
+}
+
 void InputHandler::InputHandlerThread::run() {
     std::string command;
     while(std::getline(std::cin, command)) {
@@ -77,7 +84,4 @@ void InputHandler::InputHandlerThread::run() {
         // Check again, maybe we were destroyed
         if(*end_thread) return;
     }
-
-    // The thread has ended
-    delete this;
 }
