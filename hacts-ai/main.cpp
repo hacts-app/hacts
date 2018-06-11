@@ -5,6 +5,21 @@
 using namespace std;
 using namespace chrono;
 //
+
+#ifdef _WIN32
+#include <windows.h>
+static void fixPlatformQuirks() {
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
+}
+#else
+static void fixPlatformQuirks() {
+}
+#endif
+
+
 system_clock::time_point bef;
 
 const int test_time =  12;
@@ -12,14 +27,17 @@ map<int, Road> roads;
 const string path = "data.txt";
 
 
-static void processCommand(InputHandler &inputHandler) {
+static void processCommands(InputHandler &inputHandler) {
     std::string command;
     while(inputHandler.getAvailableInput(command))
         std::clog << "Received " << command;
 }
 
+
 int main()
 {
+    fixPlatformQuirks();
+
     InputHandler inputHandler;
 
     bef = system_clock::now();
@@ -40,7 +58,7 @@ int main()
 
     while(golf3.getV() < 30) // faza przyspieszania
     {
-        processCommand(inputHandler);
+        processCommands(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onGasPush(1, bef);
@@ -50,7 +68,6 @@ int main()
         golf3.givePos();
 
         radar = golf3.radar(roads[12].ways);
-//        return 0;
 
         if(!golf3.onRoad(roads[12].ways))
             return 0;
@@ -60,7 +77,7 @@ int main()
 
     while(golf3.getX() < 500) // do 500 metrow utrzymanie predkosci
     {
-        processCommand(inputHandler);
+        processCommands(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.changePos(bef);
@@ -77,7 +94,7 @@ int main()
 
     while(golf3.getV() > 2.7) // zwolnienie do 10 km/h
     {
-        processCommand(inputHandler);
+        processCommands(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onBrakePush(0.5, bef);
@@ -97,7 +114,7 @@ int main()
 
     while(golf3.getAng() < 45) // poczatek skretu
     {
-        processCommand(inputHandler);
+        processCommands(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.changeWheelAng(0.5, bef);
@@ -116,7 +133,7 @@ int main()
 
     while(golf3.getWAng() > 0) // koniec skretu
     {
-        processCommand(inputHandler);
+        processCommands(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.changeWheelAng(-0.5, bef);
@@ -141,7 +158,7 @@ int main()
 
     while(golf3.getV() < 54) // gaz do dechy na max V
     {
-        processCommand(inputHandler);
+        processCommands(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onGasPush(1, bef);
@@ -160,7 +177,7 @@ int main()
 
     while(golf3.getV() > 0) // awaryjne hamowanie do 0
     {
-        processCommand(inputHandler);
+        processCommands(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onBrakePush(1, bef);
