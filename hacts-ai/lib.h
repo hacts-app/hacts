@@ -141,6 +141,12 @@ struct Way
     int id;
     vector<int> neighboursId = {};
     vector<Node> points = {};
+
+    Way(int num, vector<int> neighbours)
+    {
+        id = num;
+        neighboursId = neighbours;
+    }
 };
 
 struct Road

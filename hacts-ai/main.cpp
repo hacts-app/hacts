@@ -1,6 +1,8 @@
 #include <iostream>
 #include "lib.h"
-#include "inputhandler.h"
+//#include "inputhandler.h"
+
+
 
 using namespace std;
 using namespace chrono;
@@ -26,13 +28,11 @@ const int test_time =  12;
 map<int, Road> roads;
 const string path = "data.txt";
 
-
-static void processCommands(InputHandler &inputHandler) {
+static void processCommand(InputHandler &inputHandler) {
     std::string command;
     while(inputHandler.getAvailableInput(command))
         std::clog << "Received " << command;
 }
-
 
 int main()
 {
@@ -149,8 +149,6 @@ int main()
 
         bef = system_clock::now();
     }
-
-    // Wojtkowe czity xd
 
     golf3.AngTo(90);
     golf3.WAngTo(0);
