@@ -1,6 +1,8 @@
 #include <iostream>
 #include "lib.h"
-#include "inputhandler.h"
+//#include "inputhandler.h"
+
+
 
 using namespace std;
 using namespace chrono;
@@ -11,7 +13,7 @@ const int test_time =  12;
 map<int, Road> roads;
 const string path = "data.txt";
 
-
+/*
 static void processCommand(InputHandler &inputHandler) {
     std::string command;
     if(! inputHandler.getAvailableInput(command))
@@ -19,10 +21,10 @@ static void processCommand(InputHandler &inputHandler) {
 
     std::clog << "Received " << command;
 }
-
+*/
 int main()
 {
-    InputHandler inputHandler;
+   // InputHandler inputHandler;
 
     bef = system_clock::now();
     this_thread::sleep_for(milliseconds(4000));
@@ -42,7 +44,7 @@ int main()
 
     while(golf3.getV() < 30) // faza przyspieszania
     {
-        processCommand(inputHandler);
+    //    processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onGasPush(1, bef);
@@ -62,7 +64,7 @@ int main()
 
     while(golf3.getX() < 500) // do 500 metrow utrzymanie predkosci
     {
-        processCommand(inputHandler);
+     //   processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.changePos(bef);
@@ -79,7 +81,7 @@ int main()
 
     while(golf3.getV() > 2.7) // zwolnienie do 10 km/h
     {
-        processCommand(inputHandler);
+      //  processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onBrakePush(0.5, bef);
@@ -99,7 +101,7 @@ int main()
 
     while(golf3.getAng() < 45) // poczatek skretu
     {
-        processCommand(inputHandler);
+      //  processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.changeWheelAng(0.5, bef);
@@ -118,7 +120,7 @@ int main()
 
     while(golf3.getWAng() > 0) // koniec skretu
     {
-        processCommand(inputHandler);
+       // processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.changeWheelAng(-0.5, bef);
@@ -135,15 +137,13 @@ int main()
         bef = system_clock::now();
     }
 
-    // Wojtkowe czity xd
-
     golf3.AngTo(90);
     golf3.WAngTo(0);
 
 
     while(golf3.getV() < 54) // gaz do dechy na max V
     {
-        processCommand(inputHandler);
+      //  processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onGasPush(1, bef);
@@ -162,7 +162,7 @@ int main()
 
     while(golf3.getV() > 0) // awaryjne hamowanie do 0
     {
-        processCommand(inputHandler);
+       // processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
         golf3.onBrakePush(1, bef);

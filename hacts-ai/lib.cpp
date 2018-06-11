@@ -70,12 +70,12 @@ void push_back2(vector<T> &v, T &elem1, T &elem2)
 }
 
 double geo_vector(Node A, Node B, Node C) // tworzenie iloczynu wektorowego
-{
-    double 	x1 = C.x - A.x,
-            y1 = C.y - A.y,
-            x2 = B.x - A.x,
-            y2 = B.y - A.y;
-    return x1*y2 - x2*y1;
+{                                   // liczenie wartosci na osi Z (x i y = 0 zawsze)
+    double 	x1 = C.x - A.x, //      1 i 2 to wektory CA i BA
+            y1 = C.y - A.y, //      z macierzy :
+            x2 = B.x - A.x, //   1   | 1x  1y|
+            y2 = B.y - A.y; //   2   | 2x  2y|  =  1x*2y - 1y*2x
+    return x1*y2 - x2*y1;   //                   (mnozymy na krzyz obliczajac z)
 }
 
 bool check_inter(Node A, Node B, Node C) // sprawdzanie czy krawedz nie nalezy do drugiego odcinka
@@ -155,11 +155,9 @@ void setRoads(const string path)
 
         int nr = stoi(elements[1]);
 
-        roads[nr].ways.push_back(Way{stoi(elements[0])}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
-
         vector<int> neighbours= vec_stoi(split(elements[2], ','));
 
-        roads[nr].ways.back().neighboursId = neighbours;
+        roads[nr].ways.push_back(Way{stoi(elements[0]) ,neighbours}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
 
         vector<double> coords = vec_stod(split(elements[3], ','));
 
