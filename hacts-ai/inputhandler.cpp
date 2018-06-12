@@ -13,6 +13,7 @@ InputHandler::InputHandler()
     threadObject->has_command = has_command;
     threadObject->mutex = mutex;
     threadObject->processed_command = processed_command;
+    threadObject->received_input = received_input;
 
     // start the thread
     inputReadingThread = new std::thread(*threadObject);
@@ -38,6 +39,26 @@ InputHandler::~InputHandler()
 bool InputHandler::getAvailableInput(std::string &command) {
     std::lock_guard<std::mutex> lock(*mutex);
 
+    return getAvailableInputWithoutLock(command);
+}
+
+bool InputHandler::waitForInput(std::string &command)
+{
+    std::unique_lock<std::mutex> lock(*mutex);
+
+    // Do we have some input data queued?
+    if(getAvailableInputWithoutLock(command))
+        return true;
+
+    // Wait until some input data is received
+    received_input->wait(lock);
+
+    return getAvailableInputWithoutLock(command);
+}
+
+bool InputHandler::getAvailableInputWithoutLock(std::string &command) {
+    // Never call this method without a lock active!
+
     // Has anything been read since last call?
     if(*has_command == false)
         return false;
@@ -52,7 +73,6 @@ bool InputHandler::getAvailableInput(std::string &command) {
     return true;
 }
 
-
 // InputHandlerThread:
 
 void InputHandler::InputHandlerThread::operator()() {
@@ -64,6 +84,7 @@ void InputHandler::InputHandlerThread::operator()() {
 
 void InputHandler::InputHandlerThread::run() {
     std::string command;
+
     while(std::getline(std::cin, command)) {
 
         // TODO: parse command here...
@@ -71,17 +92,20 @@ void InputHandler::InputHandlerThread::run() {
         // take lock
         std::unique_lock<std::mutex> lock(*mutex);
 
-        // check again with the lock taken
+        // Check if we were destroyed and should quit
         if(*end_thread) return;
 
-        // Give the read command
+        // Give the read data to the main thread
         *this->command = command;
         *has_command = true;
+
+        // If waitForInput is waiting for data, notify it
+        received_input->notify_all();
 
         // wait for the main thread to process the command, unblocking comman_mutex
         processed_command->wait(lock);
 
-        // Check again, maybe we were destroyed
+        // Check again if we were destroyed
         if(*end_thread) return;
     }
 }
