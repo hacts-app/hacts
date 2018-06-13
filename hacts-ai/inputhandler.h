@@ -30,6 +30,11 @@ public:
      */
     bool getAvailableInput(std::string &command);
 
+    /**
+     * behaves like getAvailableInput but waits for input if there isn't any
+     */
+    bool waitForInput(std::string &command);
+
 private:
     class InputHandlerThread
     {
@@ -44,10 +49,13 @@ private:
         std::shared_ptr<std::string> command;
         std::shared_ptr<bool> has_command;
         std::shared_ptr<std::condition_variable> processed_command;
+        std::shared_ptr<std::condition_variable> received_input;
     private:
 
         void run();
     };
+
+    bool getAvailableInputWithoutLock(std::string &command);
 
     /**
      * The thread which runs InputHandlerThread
@@ -87,4 +95,10 @@ private:
      * Needed for inputReadingThread to wait until has_command becomes true.
      */
     std::shared_ptr<std::condition_variable> processed_command = std::make_shared<std::condition_variable>();
+
+    /**
+     * Notify waitForInput when input is available
+     */
+    std::shared_ptr<std::condition_variable> received_input = std::make_shared<std::condition_variable>();
+
 };
