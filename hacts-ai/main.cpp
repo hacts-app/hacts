@@ -35,12 +35,7 @@ static void processCommand(InputHandler &inputHandler) {
 
 int main()
 {
-    #ifdef _WIN32
-    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
-    }
-    #endif
+
     fixPlatformQuirks();
 
     InputHandler inputHandler;
@@ -52,10 +47,10 @@ int main()
     bef = system_clock::now();
 
     Car golf3(0, 1540, 350, 3.23, 0.315, 54, 80, 0, 0, 4.02, 1.7);
-    Car tesla(1, 1540, 350, 3.23, 0.315, 54, 89, 30, 0, 4.02, 1.7); // z 1.9 TDI xddd
+    //Car tesla(1, 1540, 350, 3.23, 0.315, 54, 89, 30, 0, 4.02, 1.7); // z 1.9 TDI xddd
 
     roads[12].cars.push_back(&golf3);
-    roads[12].cars.push_back(&tesla);
+    //roads[12].cars.push_back(&tesla);
 
     while(true) // klatka
     {
@@ -75,7 +70,7 @@ int main()
 
                 car->givePos();
 
-                road.second.crashes(); /// constexpr ?
+                road.second.crashes();
             }
         }
         bef = system_clock::now();
