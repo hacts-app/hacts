@@ -2,17 +2,30 @@
 #include "lib.h"
 #include "inputhandler.h"
 
-
-
 using namespace std;
 using namespace chrono;
-//
+
+
+#ifdef _WIN32
+#include <windows.h>
+static void fixPlatformQuirks() {
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
+}
+#else
+static void fixPlatformQuirks() {
+}
+#endif
+
+
 system_clock::time_point bef;
 
 const int test_time =  12;
 map<int, Road> roads;
+const int max_road_nr = 12;
 const string path = "data.txt";
-
 
 static void processCommand(InputHandler &inputHandler) {
     std::string command;
@@ -28,158 +41,43 @@ int main()
         freopen("CONOUT$", "w", stderr);
     }
     #endif
-    InputHandler inputHandler;
+    fixPlatformQuirks();
 
-    bef = system_clock::now();
-    this_thread::sleep_for(milliseconds(4000));
+    InputHandler inputHandler;
 
     setRoads(path);
 
     vector<double> radar;
 
-    Car golf3(0, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7); // xy 128, 520
-
     bef = system_clock::now();
 
-    golf3.changePos(bef);
+    Car golf3(0, 1540, 350, 3.23, 0.315, 54, 80, 0, 0, 4.02, 1.7);
+    Car tesla(1, 1540, 350, 3.23, 0.315, 54, 89, 30, 0, 4.02, 1.7); // z 1.9 TDI xddd
 
-    golf3.givePos();
+    roads[12].cars.push_back(&golf3);
+    roads[12].cars.push_back(&tesla);
 
-
-    while(golf3.getV() < 30) // faza przyspieszania
+    while(true) // klatka
     {
-        processCommand(inputHandler);
         this_thread::sleep_for(chrono::milliseconds(test_time));
 
-        golf3.onGasPush(1, bef);
+        for(auto &road: roads)
+        {
+            for(Car* car: road.second.cars)
+            {
+                processCommand(inputHandler);
 
-        golf3.changePos(bef);
+                car->radar(road.second.ways);
 
-        golf3.givePos();
+                car->onGasPush(1, bef);
 
-        radar = golf3.radar(roads[12].ways);
-//        return 0;
+                car->changePos(bef);
 
-        if(!golf3.onRoad(roads[12].ways))
-            return 0;
+                car->givePos();
 
-        bef = system_clock::now();
-    }
-
-    while(golf3.getX() < 500) // do 500 metrow utrzymanie predkosci
-    {
-     //   processCommand(inputHandler);
-        this_thread::sleep_for(chrono::milliseconds(test_time));
-
-        golf3.changePos(bef);
-
-        golf3.givePos();
-
-        radar = golf3.radar(roads[12].ways);
-
-        if(!golf3.onRoad(roads[12].ways))
-            return 0;
-
-        bef = system_clock::now();
-    }
-
-    while(golf3.getV() > 2.7) // zwolnienie do 10 km/h
-    {
-        processCommand(inputHandler);
-        this_thread::sleep_for(chrono::milliseconds(test_time));
-
-        golf3.onBrakePush(0.5, bef);
-
-        golf3.changePos(bef);
-
-        golf3.givePos();
-
-        radar = golf3.radar(roads[12].ways);
-
-        if(!golf3.onRoad(roads[12].ways))
-            return 0;
-
-        bef = system_clock::now();
-    }
-
-
-    while(golf3.getAng() < 45) // poczatek skretu
-    {
-        processCommand(inputHandler);
-        this_thread::sleep_for(chrono::milliseconds(test_time));
-
-        golf3.changeWheelAng(0.5, bef);
-
-        golf3.changePos(bef);
-
-        golf3.givePos();
-
-        radar = golf3.radar(roads[12].ways);
-
-        if(!golf3.onRoad(roads[12].ways))
-            return 0;
-
-        bef = system_clock::now();
-    }
-
-    while(golf3.getWAng() > 0) // koniec skretu
-    {
-        processCommand(inputHandler);
-        this_thread::sleep_for(chrono::milliseconds(test_time));
-
-        golf3.changeWheelAng(-0.5, bef);
-
-        golf3.changePos(bef);
-
-        golf3.givePos();
-
-        radar = golf3.radar(roads[12].ways);
-
-        if(!golf3.onRoad(roads[12].ways))
-            return 0;
-
-        bef = system_clock::now();
-    }
-
-    golf3.AngTo(90);
-    golf3.WAngTo(0);
-
-
-    while(golf3.getV() < 54) // gaz do dechy na max V
-    {
-        processCommand(inputHandler);
-        this_thread::sleep_for(chrono::milliseconds(test_time));
-
-        golf3.onGasPush(1, bef);
-
-        golf3.changePos(bef);
-
-        golf3.givePos();
-
-        radar = golf3.radar(roads[12].ways);
-
-        if(!golf3.onRoad(roads[12].ways))
-            return 0;
-
-        bef = system_clock::now();
-    }
-
-    while(golf3.getV() > 0) // awaryjne hamowanie do 0
-    {
-        processCommand(inputHandler);
-        this_thread::sleep_for(chrono::milliseconds(test_time));
-
-        golf3.onBrakePush(1, bef);
-
-        golf3.changePos(bef);
-
-        golf3.givePos();
-
-        radar = golf3.radar(roads[12].ways);
-
-        if(!golf3.onRoad(roads[12].ways))
-            return 0;
-
+                road.second.crashes(); /// constexpr ?
+            }
+        }
         bef = system_clock::now();
     }
 

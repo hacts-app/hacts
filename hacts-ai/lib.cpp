@@ -20,6 +20,8 @@ double degToRad(double deg)
     return (PI * deg) / 180.0;
 }
 
+bool desc(int i, int j) {return i > j;}
+
 vector<int> vec_stoi(vector<string> x)
 {
     vector<int> loc;
@@ -214,7 +216,7 @@ Car::Car(int id, int mass, double transfer, int torque, double radius, double ma
 }
 
 void Car::onGasPush(double trans, system_clock::time_point bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
-{
+{   
     double transfer = max_transfer * trans;
 
     double F = (transfer * torque) / radius;
@@ -320,7 +322,7 @@ bool Car::onRoad(vector<Way> &ways)
 
     for(const Way &way: ways)
     {
-        for(int i = 1; i < way.points.size(); i++)
+        for(unsigned int i = 1; i < way.points.size(); i++)
         {
             Node A = way.points[i-1];
             Node B = way.points[i];
@@ -360,10 +362,16 @@ void Car::changePos(system_clock::time_point bef)
 
 bool Rectangle::intersection(Node A, Node B)
 {
-    for(int i = 1; i < 4; i++)
+    for(int i = 0; i < 4; i++)
     {
-        Node C = corners[i-1];
+        Node C;
         Node D = corners[i];
+
+        if(i == 0)
+            C = corners[3];
+        else
+            C = corners[i-1];
+
         double 	v1 = geo_vector(C, D, A),
                 v2 = geo_vector(C, D, B),
                 v3 = geo_vector(A, B, C),
@@ -384,3 +392,117 @@ bool Rectangle::intersection(Node A, Node B)
     }
     return false;
 }
+
+bool Rectangle::intersection(Rectangle &car)
+{
+    for(int j = 0; j < 4; j++)
+    {
+        Node A;
+        Node B = car.corners[j];
+
+        if(j == 0)
+            A = car.corners[3];
+        else
+            A = car.corners[j-1];
+
+        for(int i = 0; i < 4; i++)
+        {
+            Node C;
+            Node D = corners[i];
+
+            if(i == 0)
+                C = corners[3];
+            else
+                C = corners[i-1];
+
+            double 	v1 = geo_vector(C, D, A),
+                    v2 = geo_vector(C, D, B),
+                    v3 = geo_vector(A, B, C),
+                    v4 = geo_vector(A, B, D);
+
+                // sprawdzanie czy odcinki sie przecinaja
+            if((v1*v2 < 0 && v3*v4 < 0) || (((v1>0 && v2<0) || (v1<0 && v2>0)) && ((v3>0 && v4<0) || (v3<0 && v4>0))))
+                return true;
+
+            // sprawdzanie czy odcinki sie nie lacza ( czy skrajny punkt jednego nie nalezy do odcinka drugiego)
+            if((v1 == 0 && check_inter(C, D, A))||
+               (v2 == 0 && check_inter(C, D, B))||
+               (v3 == 0 && check_inter(A, B, C))||
+              (v4 == 0 && check_inter(A, B, D)))
+            return true;
+           // odcinki nie maja punktow wspolnych
+
+        }
+    }
+    return false;
+}
+
+void Road::crashes()
+{
+    vector<int> list_of_destroyed;
+
+    for(unsigned int i = 0; i < cars.size(); i++) // wjazdy w sciany
+    {
+        if(!cars[i]->onRoad(this->ways))
+        {
+            list_of_destroyed.push_back(i);
+        }
+    }
+
+    sort(list_of_destroyed.begin(), list_of_destroyed.end(), desc);
+
+    for(const int &x: list_of_destroyed) {
+        dead_cars.push_back(&cars[x]->car_borders);
+
+        cars.erase(cars.begin() + x, cars.begin() + x + 1);
+    }
+
+    list_of_destroyed.clear();
+
+    for(unsigned int i = 0; i < cars.size(); i++) // zderzenia aut
+    {
+      /*  bool crashed = false;
+
+        for(const int &dead: list_of_destroyed)
+        {
+            if(dead == i)
+            {
+                crashed = true;
+                break;
+            }
+        }
+
+        if(crashed)
+            continue;
+        */
+
+        for(unsigned int j = i + 1; j < cars.size(); j++)
+        {
+            if(cars[i]->car_borders.intersection(cars[j]->car_borders)) // jesli nastapilo zderzenie
+            {
+                list_of_destroyed.push_back(i);
+
+                list_of_destroyed.push_back(j);
+
+                // break;
+            }
+        }
+        for(unsigned int j = 0; j < dead_cars.size(); j++)
+        {
+            if(cars[i]->car_borders.intersection(*dead_cars[j]))
+            {
+                list_of_destroyed.push_back(i);
+
+                break;
+            }
+        }
+    }
+    sort(list_of_destroyed.begin(), list_of_destroyed.end(), desc);
+
+    for(const int &x: list_of_destroyed) {
+        dead_cars.push_back(&cars[x]->car_borders);
+
+        cars.erase(cars.begin() + x, cars.begin() + x + 1);
+    }
+}
+

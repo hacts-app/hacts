@@ -12,7 +12,8 @@
 #include <string>
 #include <map>
 #include <line.h>
-
+#include <algorithm>
+#include <memory>
 
 using namespace std;
 using namespace chrono;
@@ -23,7 +24,7 @@ class Car;
 struct Node;
 struct Way;
 struct Road;
-class Rectangle;
+struct Rectangle;
 
 extern map<int, Road> roads;
 
@@ -33,6 +34,7 @@ double radToDeg(double rad);
 
 double degToRad(double deg);
 
+bool desc(int i, int j);
 
 vector<int> vec_stoi(vector<string> x);
 
@@ -57,11 +59,10 @@ void setRoads(const string path);
 
 Node moveNode(double x, double y, double a, double R);
 
-class Rectangle
+struct Rectangle
 {
     vector<Node> corners;
 
-public:
     Rectangle(vector<Node> points)
     {
         corners = points;
@@ -73,6 +74,8 @@ public:
     }
 
     bool intersection(Node A, Node B);
+
+    bool intersection(Rectangle &car);
 };
 
 class Car
@@ -91,11 +94,12 @@ private:
     double x,y;
     double length;
     double width;
+public:
     Rectangle car_borders;
 
 public:
-    Car(int id, int m, double t, int tor, double r, double mv, double ang, double _x, double _y, double len, double wi);
-    // id, masa, max moment silnika, przelozenie, promien kola, max predkosc
+    Car(int id, int mass, double transfer, int torque, double radius, double max_velocity,
+             double angle, double _x, double _y, double length, double width);
 
     void onGasPush(double trans, system_clock::time_point bef);
     // trans od 0.00 do 1 to % wcisniecia gazu ... zakladamy ze aktywowane co sekunde
@@ -118,6 +122,8 @@ public:
 
     void changePos(system_clock::time_point bef);
         // zmiana pozycji i KĄTA
+
+    void onCrash(); // niszczenie auta
 
     void AngTo(double q) {angle = q;}
     void WAngTo(double q){wheelAng = q;}
@@ -152,5 +158,9 @@ struct Way
 struct Road
 {
     vector<Way> ways;
+    vector<Car*> cars;
+    vector<Rectangle*> dead_cars;
+
+    void crashes(); // kraksa 2 samochodow oraz wjazdy w bande
 };
 
