@@ -27,10 +27,25 @@ map<int, Road> roads;
 const int max_road_nr = 12;
 const string path = "data.txt";
 
-static void processCommand(InputHandler &inputHandler) {
+static void processCommand(const std::string &command) {
+    std::clog << "Received " << command;
+}
+
+static void processCommands(InputHandler &inputHandler) {
     std::string command;
-    while(inputHandler.getAvailableInput(command))
-        std::clog << "Received " << command;
+    while(inputHandler.getAvailableInput(command)) {
+        if(command == "pause") {
+            for(;;) {
+                inputHandler.waitForInput(command);
+                if(command == "resume")
+                    return;
+
+                processCommand(command);
+            }
+        } else {
+            processCommand(command);
+        }
+    }
 }
 
 int main()
