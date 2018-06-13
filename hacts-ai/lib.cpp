@@ -215,7 +215,7 @@ Car::Car(int id, int mass, double transfer, int torque, double radius, double ma
     car_borders.update(carCorners);
 }
 
-void Car::onGasPush(double trans, system_clock::time_point bef) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
+void Car::onGasPush(double trans, double delta) // trans od 0.00 do 1 to % wciœniêcia gazu ... zak³adamy ¿e aktywowane co sekunde
 {   
     double transfer = max_transfer * trans;
 
@@ -223,31 +223,31 @@ void Car::onGasPush(double trans, system_clock::time_point bef) // trans od 0.00
 
     acceleration = F / mass;
 
-    velocity += (acceleration * delta_t(bef));
+    velocity += acceleration * delta;
 
     if(velocity > max_velocity)
         velocity = max_velocity;
 }
 
-void Car::onBrakePush(double per, system_clock::time_point bef)
+void Car::onBrakePush(double per, double delta)
 {
     const double max_acc = -9.59; // to chyba jest max opoznienie w hamowaniu
 
     acceleration = max_acc * per;
 
-    velocity += (acceleration * delta_t(bef));
+    velocity += acceleration * delta;
 
     if(velocity < 0)            // hamulec nie jest biegiem wstecznym
         velocity = 0;
 }
 
-void Car::changeWheelAng(double intensity, system_clock::time_point bef)
+void Car::changeWheelAng(double intensity, double delta)
 {
     const int max_rot = 15 ; // maksymalna predkosc zmiany kata  kol w sekundzie
 
     double rot = max_rot * intensity;
 
-    wheelAng += (rot * delta_t(bef));
+    wheelAng += rot * delta;
 
     if(wheelAng > 40)
         wheelAng = 40;
@@ -345,9 +345,9 @@ void Car::givePos()
     cout <<"movecar "<< carId <<" "<< x <<" "<< y <<" "<< angle <<endl;
 }
 
-void Car::changePos(system_clock::time_point bef)
+void Car::changePos(double delta)
 {
-    angle += radToDeg( (2 * velocity * sin(wheelAng * PI / 180.0)) / (length-0.6) ) * delta_t(bef);
+    angle += radToDeg( (2 * velocity * sin(wheelAng * PI / 180.0)) / (length-0.6) ) * delta;
 
     if(angle > 360)
         angle -= 360;
@@ -355,9 +355,9 @@ void Car::changePos(system_clock::time_point bef)
     if(angle < 0)
         angle += 360;
 
-    x += (velocity * cos((angle) * PI / 180.0) * delta_t(bef));
+    x += velocity * cos((angle) * PI / 180.0) * delta;
 
-    y += (velocity * sin((angle) * PI / 180.0) * delta_t(bef));
+    y += velocity * sin((angle) * PI / 180.0) * delta;
 }
 
 bool Rectangle::intersection(Node A, Node B)

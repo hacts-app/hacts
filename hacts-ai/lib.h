@@ -101,13 +101,13 @@ public:
     Car(int id, int mass, double transfer, int torque, double radius, double max_velocity,
              double angle, double _x, double _y, double length, double width);
 
-    void onGasPush(double trans, system_clock::time_point bef);
+    void onGasPush(double trans, double delta);
     // trans od 0.00 do 1 to % wcisniecia gazu ... zakladamy ze aktywowane co sekunde
 
-    void onBrakePush(double per, system_clock::time_point bef);
+    void onBrakePush(double per, double delta);
        // tak jak w gazie
 
-    void changeWheelAng(double intensity, system_clock::time_point bef);
+    void changeWheelAng(double intensity, double delta);
        // od -1 do 1 .. ujemne skrecaja w prawo dodatnie w lewo
 
     void showPos(); // informacje dla nas
@@ -120,7 +120,7 @@ public:
     bool onRoad(vector<Way> &ways);
     // sprawdza czy skrajne punkty (A,B,C,D) zawieraja sie w drodze po ktorej jedzie
 
-    void changePos(system_clock::time_point bef);
+    void changePos(double delta);
         // zmiana pozycji i KĄTA
 
     void onCrash(); // niszczenie auta
