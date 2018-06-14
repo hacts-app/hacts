@@ -159,7 +159,7 @@ struct Road
 {
     vector<Way> ways;
     vector<Car*> cars;
-    vector<Rectangle*> dead_cars;
+    vector<Rectangle*> broken_cars;
 
     void crashes(); // kraksa 2 samochodow oraz wjazdy w bande
 };

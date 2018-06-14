@@ -7,7 +7,12 @@ using namespace chrono;
 double delta_t(system_clock::time_point bef)
 {
     system_clock::time_point now = system_clock::now();
-    return (now - bef).count() / 1000000000.0; /// ???
+
+    typedef duration<double> sec;
+
+    sec delta = now - bef;
+
+    return delta.count();
 }
 
 double radToDeg(double rad)
@@ -439,7 +444,7 @@ bool Rectangle::intersection(Rectangle &car)
 
 void Road::crashes()
 {
-    vector<int> list_of_destroyed;
+    vector<int> list_of_destroyed; // lista ktora przechowuje indexy umarlch w tej klatce aut
 
     for(unsigned int i = 0; i < cars.size(); i++) // wjazdy w sciany
     {
@@ -449,10 +454,11 @@ void Road::crashes()
         }
     }
 
-    sort(list_of_destroyed.begin(), list_of_destroyed.end(), desc);
-
+    sort(list_of_destroyed.begin(), list_of_destroyed.end(), desc); // usuwanie od konca nie spowoduje
+                                                                   // przesuniecia indexow w wektorze
     for(const int &x: list_of_destroyed) {
-        dead_cars.push_back(&cars[x]->car_borders);
+        broken_cars.push_back(new Rectangle(cars[x]->car_borders.corners));
+            // gdy auto umiera zostaje po nim prostokat jako przeszkoda dla innych aut
 
         cars.erase(cars.begin() + x, cars.begin() + x + 1);
     }
@@ -461,21 +467,6 @@ void Road::crashes()
 
     for(unsigned int i = 0; i < cars.size(); i++) // zderzenia aut
     {
-      /*  bool crashed = false;
-
-        for(const int &dead: list_of_destroyed)
-        {
-            if(dead == i)
-            {
-                crashed = true;
-                break;
-            }
-        }
-
-        if(crashed)
-            continue;
-        */
-
         for(unsigned int j = i + 1; j < cars.size(); j++)
         {
             if(cars[i]->car_borders.intersection(cars[j]->car_borders)) // jesli nastapilo zderzenie
@@ -483,13 +474,11 @@ void Road::crashes()
                 list_of_destroyed.push_back(i);
 
                 list_of_destroyed.push_back(j);
-
-                // break;
             }
         }
-        for(unsigned int j = 0; j < dead_cars.size(); j++)
+        for(Rectangle* &rec: broken_cars) // zderzenia z autami trupami
         {
-            if(cars[i]->car_borders.intersection(*dead_cars[j]))
+            if(cars[i]->car_borders.intersection(*rec))
             {
                 list_of_destroyed.push_back(i);
 
@@ -500,7 +489,7 @@ void Road::crashes()
     sort(list_of_destroyed.begin(), list_of_destroyed.end(), desc);
 
     for(const int &x: list_of_destroyed) {
-        dead_cars.push_back(&cars[x]->car_borders);
+        broken_cars.push_back(new Rectangle(cars[x]->car_borders.corners));
 
         cars.erase(cars.begin() + x, cars.begin() + x + 1);
     }

@@ -21,14 +21,41 @@ static void fixPlatformQuirks() {
 
 
 double delta; // w sek.
+system_clock::time_point start;
 
-const int max_fps =  60;
+vector<int> cars_id {0};
+
 map<int, Road> roads;
+
 const int max_road_nr = 12;
+
 const string path = "data.txt";
 
 static void processCommand(const std::string &command) {
-    std::clog << "Received " << command;
+    if(command == "")
+        return;
+
+    vector<string> parameters = split(command, ' ');
+
+    if(parameters[0] == "newcar" && parameters.size() == 2)
+    {
+        int id = stoi(parameters[1]);
+
+        for(const int &x: cars_id)
+        {
+            if(id == x)
+                return;
+        }
+        roads[12].cars.push_back(new Car(id, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7));
+
+        cars_id.push_back(id);
+
+        clog << "Car " << id << " added" << endl;
+
+        return;
+    }
+
+    clog << "Received wrong command! \"" << command << "\"" << endl;
 }
 
 static void processCommands(InputHandler &inputHandler) {
@@ -38,8 +65,10 @@ static void processCommands(InputHandler &inputHandler) {
             for(;;) {
                 inputHandler.waitForInput(command);
                 if(command == "resume")
+                {
+                    start = system_clock::now();
                     return;
-
+                }
                 processCommand(command);
             }
         } else {
@@ -59,7 +88,7 @@ int main()
 
     vector<double> radar;
 
-    system_clock::time_point start;
+
 
     delta = 0;
 
@@ -73,12 +102,12 @@ int main()
     {
         start = system_clock::now();
 
+        processCommands(inputHandler);
+
         for(auto &road: roads)
         {
-            for(Car* car: road.second.cars)
+            for(Car* &car: road.second.cars)
             {
-                processCommands(inputHandler);
-
                 car->radar(road.second.ways);
 
                 car->onGasPush(1, delta);
