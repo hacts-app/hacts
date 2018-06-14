@@ -6,6 +6,7 @@
 #include <QGraphicsScene>
 #include <QMap>
 #include <QStandardItemModel>
+#include <QItemSelection>
 
 #include "graphicsview.h"
 #include "carshape.h"
@@ -31,7 +32,22 @@ private slots:
 
     void on_zoomOutButton_clicked();
 
+    void on_pauseButton_toggled(bool checked);
+
+    void on_createCarButton_clicked();
+
+    void treeSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+    void on_deleteSelected_clicked();
+
+    void on_dial_sliderMoved(int position);
+
 private:
+    bool paused = false;
+    int newCarId = 1; // how many cars does ai create?
+
+    CarID selectedCarID;
+
     Ui::MainWindow *ui;
     QStandardItemModel *treeModel;
 
@@ -46,6 +62,7 @@ private:
 
     void loadRoad();
 
+    void displayOptionsForCar(CarID id, const QString &name);
 };
 
 #endif // MAINWINDOW_H

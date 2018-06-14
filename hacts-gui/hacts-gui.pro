@@ -31,12 +31,14 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     graphicsview.cpp \
-    carshape.cpp
+    carshape.cpp \
+    cartreeitem.cpp
 
 HEADERS += \
     mainwindow.h \
     graphicsview.h \
-    carshape.h
+    carshape.h \
+    cartreeitem.h
 
 FORMS += \
     mainwindow.ui

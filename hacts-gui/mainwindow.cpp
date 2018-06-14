@@ -10,8 +10,10 @@
 #include <QTextStream>
 #include <QtMath>
 #include <QStandardItem>
+#include <QModelIndexList>
 
 #include "carshape.h"
+#include "cartreeitem.h"
 
 static qreal carwidth = 3.23, carheight = 4.02;
 
@@ -21,11 +23,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->carOptionsGroupBox->hide(); // no way to do this from the designer
 
     treeModel = new QStandardItemModel(this);
     treeModel->invisibleRootItem()->appendRow(new QStandardItem("Samochody"));
     ui->treeView->setModel(treeModel);
     ui->treeView->setExpanded(treeModel->index(0, 0), true);
+
+    QItemSelectionModel *selectionModel = ui->treeView->selectionModel();
+    connect(selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(treeSelectionChanged(QItemSelection,QItemSelection)));
 
     process = new QProcess(this);
 
@@ -112,6 +119,13 @@ void MainWindow::loadRoad()
     }
 }
 
+void MainWindow::displayOptionsForCar(CarID id, const QString &name)
+{
+    selectedCarID = id;
+    ui->carOptionsGroupBox->setTitle(name);
+    ui->carOptionsGroupBox->show();
+}
+
 void MainWindow::on_zoomInButton_clicked()
 {
     view->scrollZoom(10);
@@ -134,11 +148,65 @@ CarShape *MainWindow::getCarById(CarID id)
 
     scene->addItem(carShape);
 
-    treeModel->item(0, 0)->appendRow(
-        new QStandardItem(
-            QString("Samochód ") + QString::number(id)
-        )
-    );
+    CarTreeItem *item = new CarTreeItem(QString("Samochód ") + QString::number(id));
+    item->setCarID(id);
+    treeModel->item(0, 0)->appendRow(item);
 
     return carShape;
+}
+
+void MainWindow::on_pauseButton_toggled(bool checked)
+{
+    if(checked)
+        process->write("pause\n");
+    else
+        process->write("resume\n");
+
+    paused = !checked;
+}
+
+void MainWindow::on_createCarButton_clicked()
+{
+    if(!paused)
+        process->write("pause\n");
+
+    QPointF viewCenter = view->mapToScene(view->viewport()->rect()).boundingRect().center();
+
+    process->write(QString("newcar %1\n").arg(newCarId).toUtf8());
+    process->write(QString("movecar %1 %2 %3\n")
+                   .arg(newCarId)
+                   .arg(viewCenter.x())
+                   .arg(viewCenter.y()).toUtf8());
+
+    getCarById(newCarId);
+
+    newCarId++;
+
+    if(!paused)
+        process->write("resume\n");
+}
+
+void MainWindow::treeSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    Q_UNUSED(deselected) // don't need no warnings
+
+    QModelIndexList selectedIndexes = selected.indexes();
+    if(selectedIndexes.empty() || selectedIndexes.first().parent() != treeModel->index(0, 0))
+        ui->carOptionsGroupBox->hide();
+
+    QStandardItem *carItem = treeModel->itemFromIndex(selectedIndexes.first());
+    CarID id = dynamic_cast<CarTreeItem *>(carItem)->carID();
+
+    displayOptionsForCar(id, carItem->text());
+}
+
+void MainWindow::on_deleteSelected_clicked()
+{
+    process->write(QString("deletecar %1\n").arg(selectedCarID).toUtf8());
+}
+
+void MainWindow::on_dial_sliderMoved(int position)
+{
+    double angle = qDegreesToRadians(position * 0.1);
+    process->write(QString("rotatecar %1 %2\n").arg(selectedCarID).arg(angle).toUtf8());
 }
