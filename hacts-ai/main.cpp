@@ -1,6 +1,7 @@
 #include <iostream>
 #include "lib.h"
 #include "inputhandler.h"
+#include "processCommand.h"
 
 using namespace std;
 using namespace chrono;
@@ -20,62 +21,16 @@ static void fixPlatformQuirks() {
 #endif
 
 
-double delta; // w sek.
+double delta = 0; // w sek.
 system_clock::time_point start;
 
-vector<int> cars_id {0};
+vector<int> cars_id {};
 
 map<int, Road> roads;
 
 const int max_road_nr = 12;
 
 const string path = "data.txt";
-
-static void processCommand(const std::string &command) {
-    if(command == "")
-        return;
-
-    vector<string> parameters = split(command, ' ');
-
-    if(parameters[0] == "newcar" && parameters.size() == 2)
-    {
-        int id = stoi(parameters[1]);
-
-        for(const int &x: cars_id)
-        {
-            if(id == x)
-                return;
-        }
-        roads[12].cars.push_back(new Car(id, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7));
-
-        cars_id.push_back(id);
-
-        clog << "Car " << id << " added" << endl;
-
-        return;
-    }
-
-    clog << "Received wrong command! \"" << command << "\"" << endl;
-}
-
-static void processCommands(InputHandler &inputHandler) {
-    std::string command;
-    while(inputHandler.getAvailableInput(command)) {
-        if(command == "pause") {
-            for(;;) {
-                inputHandler.waitForInput(command);
-                if(command == "resume")
-                {
-                    start = system_clock::now();
-                    return;
-                }
-                processCommand(command);
-            }
-        } else {
-            processCommand(command);
-        }
-    }
-}
 
 int main()
 {
@@ -87,16 +42,6 @@ int main()
     setRoads(path);
 
     vector<double> radar;
-
-
-
-    delta = 0;
-
-    Car golf3(0, 1540, 350, 3.23, 0.315, 54, 80, 0, 0, 4.02, 1.7);
-    //Car tesla(1, 1540, 350, 3.23, 0.315, 54, 89, 30, 0, 4.02, 1.7); // z 1.9 TDI xddd
-
-    roads[12].cars.push_back(&golf3);
-    //roads[12].cars.push_back(&tesla);
 
     while(true) // klatka
     {
@@ -127,7 +72,6 @@ int main()
             delta = 0.02;
         }
     }
-
 
     return 0;
 }

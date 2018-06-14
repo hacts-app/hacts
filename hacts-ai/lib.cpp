@@ -110,7 +110,7 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     double bG = yG - aG*xG;
 
     if(a == aG) // jezeli sa rownolegle nie maja punktow stcznosci
-        return 60;
+        return 100;
 
     // x stycznosci:
     double x = (b - bG) / (aG - a);
@@ -121,21 +121,21 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     if((ang >= 0 && ang < 90) || (ang > 270 && ang < 360)) // x polprostej -> inf
     {
         if(x < xG) // jesli punkt jest na lewo to nie ma
-            return 60;
+            return 100;
     }
     else if((ang > 90 && ang <= 180) || (ang > 180 && ang < 270)) // x polprostej -> -inf
     {
         if(x > xG)
-            return 60;
+            return 100;
     }
     else
     {
 
         if(ang == 90 && y < yG)
-            return 60;
+            return 100;
 
         if(ang == 270 && y > yG)
-            return 60;
+            return 100;
     }
 
     // czy x należy do dziedziny krawedzi
@@ -263,7 +263,7 @@ void Car::changeWheelAng(double intensity, double delta)
 vector<double> Car::radar(vector<Way> &ways)
 {
     vector<double> result;
-    double minimum = 60;
+    double minimum = 100;
 
     for(int k = 0; k < 14; k++)
     {
@@ -297,7 +297,7 @@ vector<double> Car::radar(vector<Way> &ways)
         }
         result.push_back(minimum);
 
-        minimum = 60;
+        minimum = 100;
     }
     return result;
 }

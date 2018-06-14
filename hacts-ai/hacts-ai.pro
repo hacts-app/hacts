@@ -18,12 +18,12 @@ DESTDIR = $$_PRO_FILE_PWD_/../out
 SOURCES += \
     main.cpp \
     lib.cpp \
-    line.cpp \
-    inputhandler.cpp
+    inputhandler.cpp \
+    processCommand.cpp
 
 HEADERS += \
     lib.h \
-    line.h \
-    inputhandler.h
+    inputhandler.h \
+    processCommand.h
 
 CONFIG += console

@@ -11,7 +11,7 @@
 #include <fstream>
 #include <string>
 #include <map>
-#include <line.h>
+#include "processCommand.h"
 #include <algorithm>
 #include <memory>
 
@@ -123,17 +123,9 @@ public:
     void changePos(double delta);
         // zmiana pozycji i KĄTA
 
-    void onCrash(); // niszczenie auta
-
-    void AngTo(double q) {angle = q;}
-    void WAngTo(double q){wheelAng = q;}
-
-    double getV() {return velocity;}
-    double getX() {return x;}
-    double getY() {return y;}
-    double getAng() {return angle;}
-    double getWAng() {return wheelAng;}
-
+    friend void movecar(const int id, const  double x, const  double y);
+    friend void rotatecar(const int id, const double angle);
+    friend void killcar(const int id);
 };
 
 struct Node
