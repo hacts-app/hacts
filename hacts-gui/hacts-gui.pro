@@ -11,7 +11,7 @@ TARGET = hacts-gui
 TEMPLATE = app
 
 CONFIG += c++17
-QMAKE_CXXFLAGS += -std=gnu++17
+QMAKE_CXXFLAGS += -std=gnu++17 -ffast-math
 
 DESTDIR = $$_PRO_FILE_PWD_/../out
 

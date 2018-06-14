@@ -207,6 +207,6 @@ void MainWindow::on_deleteSelected_clicked()
 
 void MainWindow::on_dial_sliderMoved(int position)
 {
-    double angle = qDegreesToRadians(position * 0.1);
+    double angle = -qDegreesToRadians(position * 0.1) - 0.5*M_PI;
     process->write(QString("rotatecar %1 %2\n").arg(selectedCarID).arg(angle).toUtf8());
 }
