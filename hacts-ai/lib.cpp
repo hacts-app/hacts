@@ -177,7 +177,7 @@ void setRoads(const string path)
 
 Node moveNode(double x, double y, double a, double R)
 {
-    return Node{x + sin(a * PI / 180.0) * R, y +cos(a * PI / 180.0) * R};
+    return Node{x + cos(a * PI / 180.0) * R, y + sin(a * PI / 180.0) * R};
 }
 
 Car::Car(int id, int mass, double transfer, int torque, double radius, double max_velocity,
@@ -204,11 +204,11 @@ Car::Car(int id, int mass, double transfer, int torque, double radius, double ma
     double alpha = acos(1-(pow(width, 2)) / (2 * pow(R, 2))) * 180.0 / PI;
     // kat miedzy dwoma R-ami naprzeciwko szerokosci pojazdu
 
-    double a1 = tan((angle + alpha/2) * PI / 180.0);
-    // kierunkowa 1 R
+    double a1 = angle + alpha/2;
+    // kat prostej 1R
 
-    double a2 = tan((angle - alpha/2) * PI / 180.0);
-    // kierunkowa 2 R
+    double a2 = angle - alpha/2;
+    // kat prostej 2R
 
     vector<Node> carCorners{
         moveNode(x, y, a1, R),
@@ -310,10 +310,10 @@ bool Car::onRoad(vector<Way> &ways)
     double alpha = acos(1-(pow(width, 2)) / (2 * pow(R, 2))) * 180.0 / PI;
     // kat miedzy dwoma R-ami naprzeciwko szerokosci pojazdu
 
-    double a1 = tan((angle + alpha/2) * PI / 180.0);
+    double a1 = angle + alpha/2;
     // kierunkowa 1 R
 
-    double a2 = tan((angle - alpha/2) * PI / 180.0);
+    double a2 = angle - alpha/2;
     // kierunkowa 2 R
 
     vector<Node> carCorners{

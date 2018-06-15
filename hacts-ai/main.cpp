@@ -55,15 +55,15 @@ int main()
             {
                 car->radar(road.second.ways);
 
-                car->onGasPush(1, delta);
+                car->onGasPush(0.1, delta);
 
                 car->changePos(delta);
 
-                road.second.crashes();
-
                 car->givePos();            
             }
+            road.second.crashes();
         }
+
         delta = delta_t(start);
 
         if(delta < 0.02)

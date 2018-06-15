@@ -15,7 +15,7 @@
 #include "carshape.h"
 #include "cartreeitem.h"
 
-static qreal carwidth = 3.23, carheight = 4.02;
+static qreal carwidth = 1.7, carheight = 4.02;
 
 
 MainWindow::MainWindow(QWidget *parent) :
