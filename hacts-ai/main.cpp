@@ -1,7 +1,6 @@
 #include <iostream>
-#include "lib.h"
+#include "functions.h"
 #include "inputhandler.h"
-#include "processCommand.h"
 
 using namespace std;
 using namespace chrono;
@@ -20,15 +19,15 @@ static void fixPlatformQuirks() {
 }
 #endif
 
+map<int, pair<int, double>> switches;
 
 double delta = 0; // w sek.
+
 system_clock::time_point start;
 
 vector<int> cars_id {};
 
 map<int, Road> roads;
-
-const int max_road_nr = 12;
 
 const string path = "data.txt";
 
@@ -55,7 +54,20 @@ int main()
             {
                 car->radar(road.second.ways);
 
-                car->onGasPush(0.1, delta);
+                for(auto &values: switches)
+                {
+                    if(car->getId() == values.first)
+                    {
+                        if(values.second.first == 1)
+                            car->onGasPush(1, delta);
+
+                        else if(values.second.first == -1)
+                            car->onBrakePush(1, delta);
+
+                        car->humanChangeWheelAng(values.second.second);
+                        break;
+                    }
+                }
 
                 car->changePos(delta);
 

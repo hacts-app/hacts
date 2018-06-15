@@ -30,6 +30,16 @@ void processCommand(const string &command)
         killcar(stoi(parameters[1]));
         return;
     }
+    if(parameters[0] == "setacceleration" && parameters.size() == 3)
+    {
+        switches[stoi(parameters[1])].first = stoi(parameters[2]);
+        return;
+    }
+    if(parameters[0] == "setsteeringangle" && parameters.size() == 3)
+    {
+        switches[stoi(parameters[1])].second = stod(parameters[2]);
+        return;
+    }
 
     clog << "Received wrong command! \"" << command << "\"" << endl;
 }
@@ -101,12 +111,13 @@ void killcar(const int id)
 {
     for(unsigned int i = 0; i < roads[12].cars.size(); i++)
     {
-        if(id == roads[12].cars[i]->carId)
+        if(id == roads[12].cars[i]->getId())
         {
-            roads[12].broken_cars.push_back(new Rectangle(roads[12].cars[i]->car_borders.corners));
+            roads[12].broken_cars.push_back(new Rectangle(roads[12].cars[i]->car_borders->corners));
 
             roads[12].cars.erase(roads[12].cars.begin() + i, roads[12].cars.begin() + i + 1);
         }
     }
 }
+
 
