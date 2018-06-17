@@ -17,13 +17,19 @@ DESTDIR = $$_PRO_FILE_PWD_/../out
 
 SOURCES += \
     main.cpp \
-    lib.cpp \
     inputhandler.cpp \
-    processCommand.cpp
+    processCommand.cpp \
+    car.cpp \
+    rectangle.cpp \
+    mapElements.cpp \
+    functions.cpp
 
 HEADERS += \
-    lib.h \
     inputhandler.h \
-    processCommand.h
+    processCommand.h \
+    car.h \
+    rectangle.h \
+    mapElements.h \
+    functions.h
 
 CONFIG += console
