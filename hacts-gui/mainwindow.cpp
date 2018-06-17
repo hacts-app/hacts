@@ -274,7 +274,6 @@ void MainWindow::updateSteeringDial(int value)
 {
     ui->steeringWheelDial->setValue(
                 myClamp(ui->steeringWheelDial->value() + value, 0, 10000));
-
 }
 
 void MainWindow::sendTurn(CarID id, double turn)

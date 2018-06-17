@@ -25,3 +25,5 @@ void rotatecar(const int id, const double angle);
 void killcar(const int id);
 
 void setacceleration(const int id, const int action);
+
+void setautopilot(int id, int _switch);

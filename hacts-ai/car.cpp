@@ -19,6 +19,7 @@ Car::Car(int id, int mass, double transfer, int torque, double radius, double ma
     this->length = length;
     this->width = width;
     wheelAng = 0;
+    auto_drive = true;
 
     double R = (sqrt(pow(length, 2) + pow(width, 2))) / 2;
     // promien okregu opisanego na samochodzie
@@ -86,7 +87,7 @@ void Car::changeWheelAng(double intensity, double delta)
 
 void Car::humanChangeWheelAng(double position)
 {
-    position *= 40;
+    position *= -40;
 
     wheelAng = position;
 }
@@ -96,19 +97,24 @@ vector<double> Car::radar(vector<Way> &ways)
     vector<double> result;
     double minimum = 100;
 
-    for(int k = 0; k < 14; k++)
+    for(int k = 0; k < 7; k++)
     {
         double ang;
 
-        if(k < 7)
-            ang = angle + (k * 15.0);
-        else if(k == 7)
-            ang = angle + 180.0;
+        if(k == 0 )
+            ang = angle + 30;
+        else if(k == 1)
+            ang = angle + 15;
+        else if(k == 2)
+            ang = angle + 5;
+        else if(k == 3)
+            ang = angle;
+        else if(k == 4)
+            ang = angle - 5;
+        else if(k == 5)
+            ang = angle - 15;
         else
-            ang = angle + (270 + (k-8) * 15.0);
-
-        //while(ang >= 360)
-        //    ang-=360;
+            ang = angle - 30;
 
         for(const Way &way : ways)
         {
