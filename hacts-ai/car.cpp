@@ -19,6 +19,7 @@ Car::Car(int id, int mass, double transfer, int torque, double radius, double ma
     this->length = length;
     this->width = width;
     wheelAng = 0;
+    auto_drive = true;
 
     double R = (sqrt(pow(length, 2) + pow(width, 2))) / 2;
     // promien okregu opisanego na samochodzie
@@ -86,7 +87,7 @@ void Car::changeWheelAng(double intensity, double delta)
 
 void Car::humanChangeWheelAng(double position)
 {
-    position *= 40;
+    position *= -40;
 
     wheelAng = position;
 }

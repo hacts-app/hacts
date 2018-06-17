@@ -25,6 +25,7 @@ private:
     double x,y;
     double length;
     double width;
+    bool auto_drive;
 public:
     Rectangle *car_borders;
 
@@ -57,6 +58,8 @@ public:
         // zmiana pozycji i KĄTA
 
     int getId() {return carId;}
+    bool get_auto() {return auto_drive;}
+    void set_auto(bool change) {auto_drive = change;}
 
     friend void movecar(const int id, const  double x, const  double y);
     friend void rotatecar(const int id, const double angle);

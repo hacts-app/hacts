@@ -40,6 +40,11 @@ void processCommand(const string &command)
         switches[stoi(parameters[1])].second = stod(parameters[2]);
         return;
     }
+    if(parameters[0] == "setautopilot" && parameters.size() == 3)
+    {
+        setautopilot(stoi(parameters[1]), stoi(parameters[2]));
+        return;
+    }
 
     clog << "Received wrong command! \"" << command << "\"" << endl;
 }
@@ -120,4 +125,15 @@ void killcar(const int id)
     }
 }
 
+void setautopilot(int id, int _switch)
+{
+    for(Car* &car: roads[12].cars)
+    {
+        if(id == car->getId())
+        {
+            car->set_auto(_switch);
+            return;
+        }
+    }
+}
 
