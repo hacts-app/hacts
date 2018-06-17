@@ -63,7 +63,6 @@ private:
     bool paused = false;
     int newCarId = 1; // how many cars does ai create?
 
-    bool autopilot = true;
     bool sliderPressed = false;
 
     QSet<Qt::Key> heldKeys;
@@ -101,6 +100,8 @@ private:
     QTimer *turningTimer = nullptr;
     void updateSteeringDial(int value);
     void sendTurn(CarID id, double turn);
+    void sendAutopilot(CarID id, bool autopilot);
+    void ensureNotAutopilotOnSelected();
 
     void send(const QByteArray &data);
 };
