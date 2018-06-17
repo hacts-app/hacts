@@ -30,13 +30,45 @@ map<int, Road> roads;
 
 const string path = "data.txt";
 
+template < typename T >
+const T linemax(vector<T> vector)
+{
+    sort(vector.begin(), vector.end());
+
+    return vector[vector.size()-1];
+}
+
 void ai(Car* &car, const double &delta, Road &road)
 {
-    car->radar(road.ways);
+    vector<double> radar = car->radar(road.ways);
 
-    car->changeWheelAng(1, delta);
+    if(radar[0] < 4) // zbliza sie do krawedzi i awaryjnie odjeżdza
+        car->humanChangeWheelAng(0.1);
+    else if(radar[6] < 4)
+        car->humanChangeWheelAng(-0.1);
+    else if(radar[3] == linemax(radar))  // od tego miejsca szuka najlepszej drogi do jazdy
+        car->humanChangeWheelAng(0);
+    else if(radar[2] == linemax(radar))
+        car->humanChangeWheelAng(-0.1);
+    else if(radar[4] == linemax(radar))
+        car->humanChangeWheelAng(0.1);
+    else if(radar[1] == linemax(radar))
+        car->humanChangeWheelAng(-0.2);
+    else if(radar[5] == linemax(radar))
+        car->humanChangeWheelAng(0.2);
+    else if(radar[0] == linemax(radar))
+        car->humanChangeWheelAng(-0.5);
+    else if(radar[6] == linemax(radar))
+        car->humanChangeWheelAng(0.5);
 
-    car->onGasPush(1, delta);
+    if(linemax(radar) > 90 && car->getV() < 20)
+        car->onGasPush(0.5, delta);
+    else if(linemax(radar) > 50 && car->getV() < 15)
+        car->onGasPush(0.5, delta);
+    else if(linemax(radar) > 15 && car->getV() < 10)
+        car->onGasPush(0.3, delta);
+    else if(linemax(radar) < 10 && car->getV() > 3)
+        car->onBrakePush(1, delta);
 }
 
 void player(Car* &car, const double &delta)
