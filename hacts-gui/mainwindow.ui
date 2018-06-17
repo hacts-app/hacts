@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>680</width>
-    <height>381</height>
+    <width>970</width>
+    <height>611</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -125,7 +125,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QDial" name="dial">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -136,11 +136,41 @@
            <property name="maximum">
             <number>3600</number>
            </property>
+           <property name="singleStep">
+            <number>100</number>
+           </property>
            <property name="wrapping">
             <bool>true</bool>
            </property>
            <property name="notchesVisible">
             <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Obrót samochodu</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Obrót kierownicy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QDial" name="steeringWheelDial">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+           <property name="value">
+            <number>5000</number>
+           </property>
+           <property name="wrapping">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

@@ -7,6 +7,7 @@
 #include <QMap>
 #include <QStandardItemModel>
 #include <QItemSelection>
+#include <QSet>
 
 #include "graphicsview.h"
 #include "carshape.h"
@@ -25,6 +26,10 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    void keyPressEvent(QKeyEvent *ev) override;
+    void keyReleaseEvent(QKeyEvent *ev) override;
+
 private slots:
     void processReadyRead();
 
@@ -42,11 +47,24 @@ private slots:
 
     void on_dial_sliderMoved(int position);
 
+    void on_dial_sliderPressed();
+
+    void on_dial_sliderReleased();
+
+    void turningTimerFired();
+
+    void on_steeringWheelDial_valueChanged(int position);
+
 private:
     bool paused = false;
     int newCarId = 1; // how many cars does ai create?
 
+    bool sliderPressed = false;
+
+    QSet<Qt::Key> heldKeys;
+
     CarID selectedCarID;
+    bool isAnyCarSelected = false;
 
     Ui::MainWindow *ui;
     QStandardItemModel *treeModel;
@@ -63,6 +81,21 @@ private:
     void loadRoad();
 
     void displayOptionsForCar(CarID id, const QString &name);
+    void focusCarOnTree(CarID id);
+
+    void displayCarAngleIfNeeded(CarID id, double angleInDegrees);
+
+    void setAcceleration(CarID id, int direction);
+
+    int _oldacceleration = 0;
+
+    void setTurning(int direction);
+
+    int _turningNow = 0;
+    QMap<CarID, double> carTurn;
+    QTimer *turningTimer = nullptr;
+    void updateSteeringDial(int value);
+    void sendTurn(CarID id, double turn);
 };
 
 #endif // MAINWINDOW_H
