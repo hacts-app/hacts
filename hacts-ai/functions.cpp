@@ -156,23 +156,25 @@ void setRoads(const string path)
 
     while(getline(file, medium))
     {
-        vector<string> elements;
+        vector<string> elements = split(medium, '\t');
 
-        elements = split(medium, '\t');
-
-        int nr = stoi(elements[1]);
+        int nr = stoll(elements[1]);
 
         vector<int> neighbours= vec_stoi(split(elements[2], ','));
 
-        roads[nr].ways.push_back(Way{stoi(elements[0]) ,neighbours}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
+        Road* tmp = new Road(nr);
+
+        tmp->ways.push_back(Way{stoi(elements[0]) ,neighbours}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
 
         vector<double> coords = vec_stod(split(elements[3], ','));
 
         for(unsigned int i = 1; i < coords.size(); i+=2)
         {
-            roads[nr].ways.back().points.push_back(Node{coords[i-1], coords[i]}); // dodawanie wszystkich wezlow do drogi
+            tmp->ways.back().points.push_back(Node{coords[i-1], coords[i]}); // dodawanie wszystkich wezlow do drogi
         }
+        all_roads.push_back(tmp);
     }
+
 }
 
 Node moveNode(double x, double y, double a, double R)

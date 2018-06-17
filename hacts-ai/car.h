@@ -8,6 +8,7 @@ using namespace std;
 struct Node;
 struct Way;
 struct Rectangle;
+struct Road;
 
 class Car
 {
@@ -28,6 +29,7 @@ private:
     bool auto_drive;
 public:
     Rectangle *car_borders;
+    vector<Road*> roads;
 
 public:
     Car(int id, int mass, double transfer, int torque, double radius, double max_velocity,
@@ -48,7 +50,7 @@ public:
 
     void givePos(); // informacje dla ui
 
-    vector<double> radar(vector<Way> &ways);
+    vector<double> radar();
     // petla ktora liczy zblizone (pod stalymi katami) odleglosci od krawedzi drogi [POKI CO BRAK DETEKCJI INNYCH POJAZDOW]
 
     bool onRoad(vector<Way> &ways);
