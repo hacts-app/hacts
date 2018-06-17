@@ -133,12 +133,12 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
 
     if(ev->key() == Qt::Key_W || ev->key() == Qt::Key_S)
         if(!heldKeys.contains(Qt::Key_W) && !heldKeys.contains(Qt::Key_S))
-            //process->write(QString("setacceleration %1 0\n").arg(selectedCarID).toUtf8());
+            //send(QString("setacceleration %1 0\n").arg(selectedCarID).toUtf8());
             setAcceleration(selectedCarID, 0);
 
     if(ev->key() == Qt::Key_A || ev->key() == Qt::Key_D)
         if(!heldKeys.contains(Qt::Key_A) && !heldKeys.contains(Qt::Key_D))
-            //process->write(QString("setacceleration %1 0\n").arg(selectedCarID).toUtf8());
+            //send(QString("setacceleration %1 0\n").arg(selectedCarID).toUtf8());
             setTurning(0);
 }
 
@@ -164,6 +164,9 @@ void MainWindow::processLine(const QString &line)
         CarID id = commandParts.value(1).toLongLong();
         CarShape *carShape = getCarById(id);
 
+        if(carShape->isMovedByHand())
+            return;
+
         double lastx = carShape->x();
         double lasty = carShape->y();
         double x = commandParts.value(2).toDouble();
@@ -174,8 +177,7 @@ void MainWindow::processLine(const QString &line)
             scene->addLine(lastx, lasty, x, y, pen);
         }
 
-        carShape->setX(x);
-        carShape->setY(y);
+        carShape->setPos(x, y);
         carShape->setRotation(-90 + angle);
 
         displayCarAngleIfNeeded(id, -90 + angle);
@@ -206,12 +208,14 @@ void MainWindow::displayOptionsForCar(CarID id, const QString &name)
         setAcceleration(id, _oldacceleration);
         setAcceleration(selectedCarID, 0);
     }
-    ui->steeringWheelDial->setValue(carTurn.value(selectedCarID, 5000));
 
     isAnyCarSelected = true;
     selectedCarID = id;
     ui->carOptionsGroupBox->setTitle(name);
     ui->carOptionsGroupBox->show();
+
+    ui->steeringWheelDial->setValue(carTurn.value(id, 5000));
+    ui->autoPilotCheckBox->setChecked(true);
 }
 
 void MainWindow::focusCarOnTree(CarID id)
@@ -237,13 +241,13 @@ void MainWindow::displayCarAngleIfNeeded(CarID id, double angleInDegrees)
     ui->dial->setValue(10 * -(180 + angleInDegrees));
 
     //double angle = -qDegreesToRadians(position * 0.1) - 0.5*M_PI;
-    //process->write(QString("rotatecar %1 %2\n").arg(selectedCarID).arg(angle).toUtf8());
+    //send(QString("rotatecar %1 %2\n").arg(selectedCarID).arg(angle).toUtf8());
 }
 
 void MainWindow::setAcceleration(CarID id, int direction)
 {
     //qDebug() << QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8();
-    process->write(QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8());
+    send(QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8());
     _oldacceleration = direction;
 }
 
@@ -274,7 +278,13 @@ void MainWindow::updateSteeringDial(int value)
 
 void MainWindow::sendTurn(CarID id, double turn)
 {
-    process->write(QString("setsteeringangle %1 %2\n").arg(id).arg(turn, 0, 'g', 15).toUtf8());
+    send(QString("setsteeringangle %1 %2\n").arg(id).arg(turn, 0, 'g', 15).toUtf8());
+}
+
+void MainWindow::send(const QByteArray &data)
+{
+    process->write(data);
+    qDebug() << "sent" << data;
 }
 
 void MainWindow::on_zoomInButton_clicked()
@@ -296,6 +306,7 @@ CarShape *MainWindow::getCarById(CarID id)
     // this is the first time we've seen this car.
     CarShape *carShape = new CarShape(id, carwidth, carheight);
     cars[id] = carShape;
+    connect(carShape, &CarShape::putDownByUser, this, &MainWindow::carPutDownByUser);
 
     scene->addItem(carShape);
 
@@ -309,9 +320,9 @@ CarShape *MainWindow::getCarById(CarID id)
 void MainWindow::on_pauseButton_toggled(bool checked)
 {
     if(checked)
-        process->write("pause\n");
+        send("pause\n");
     else
-        process->write("resume\n");
+        send("resume\n");
 
     paused = !checked;
 }
@@ -319,12 +330,12 @@ void MainWindow::on_pauseButton_toggled(bool checked)
 void MainWindow::on_createCarButton_clicked()
 {
     if(!paused)
-        process->write("pause\n");
+        send("pause\n");
 
     QPointF viewCenter = view->mapToScene(view->viewport()->rect()).boundingRect().center();
 
-    process->write(QString("newcar %1\n").arg(newCarId).toUtf8());
-    process->write(QString("movecar %1 %2 %3\n")
+    send(QString("newcar %1\n").arg(newCarId).toUtf8());
+    send(QString("movecar %1 %2 %3\n")
                    .arg(newCarId)
                    .arg(viewCenter.x())
                    .arg(viewCenter.y()).toUtf8());
@@ -335,7 +346,7 @@ void MainWindow::on_createCarButton_clicked()
     newCarId++;
 
     if(!paused)
-        process->write("resume\n");
+        send("resume\n");
 }
 
 void MainWindow::treeSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
@@ -357,13 +368,13 @@ void MainWindow::treeSelectionChanged(const QItemSelection &selected, const QIte
 
 void MainWindow::on_deleteSelected_clicked()
 {
-    process->write(QString("deletecar %1\n").arg(selectedCarID).toUtf8());
+    send(QString("deletecar %1\n").arg(selectedCarID).toUtf8());
 }
 
 void MainWindow::on_dial_sliderMoved(int position)
 {
     double angle = -qDegreesToRadians(position * 0.1) - 0.5*M_PI;
-    process->write(QString("rotatecar %1 %2\n").arg(selectedCarID).arg(angle, 0, 'g', 15).toUtf8());
+    send(QString("rotatecar %1 %2\n").arg(selectedCarID).arg(angle, 0, 'g', 15).toUtf8());
 }
 
 void MainWindow::on_dial_sliderPressed()
@@ -395,4 +406,10 @@ void MainWindow::on_steeringWheelDial_valueChanged(int position)
     //carTurn[selectedCarID] = (position - 5000) / 10000.0 / 1.75;
 
     sendTurn(selectedCarID, steeringDialToValue(position));
+}
+
+void MainWindow::carPutDownByUser(CarID id)
+{
+    QPointF pos = cars[id]->pos();
+    send(QString("movecar %1 %2 %3\n").arg(id).arg(pos.x(), 0, 'g', 15).arg(pos.y(), 0, 'g', 15).toUtf8());
 }

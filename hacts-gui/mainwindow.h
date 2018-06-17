@@ -55,6 +55,7 @@ private slots:
 
     void on_steeringWheelDial_valueChanged(int position);
 
+    void carPutDownByUser(CarID id);
 private:
     bool paused = false;
     int newCarId = 1; // how many cars does ai create?
@@ -96,6 +97,8 @@ private:
     QTimer *turningTimer = nullptr;
     void updateSteeringDial(int value);
     void sendTurn(CarID id, double turn);
+
+    void send(const QByteArray &data);
 };
 
 #endif // MAINWINDOW_H
