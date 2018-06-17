@@ -36,7 +36,7 @@ void Road::crashes()
                 list_of_destroyed.push_back(j);
             }
         }
-        for(Rectangle* &rec: broken_cars) // zderzenia z autami trupami
+        for(Rectangle* rec: broken_cars) // zderzenia z autami trupami
         {
             if(cars[i]->car_borders->intersection(rec))
             {

@@ -35,7 +35,7 @@ bool Rectangle::intersection(Node A, Node B)
     return false;
 }
 
-bool Rectangle::intersection(Rectangle* &car)
+bool Rectangle::intersection(Rectangle* car)
 {
     for(int j = 0; j < 4; j++)
     {

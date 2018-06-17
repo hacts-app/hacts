@@ -29,7 +29,7 @@ struct Road;
 struct Rectangle;
 class Car;
 
-extern map<int, Road> roads;
+extern vector<Road*> all_roads;
 
 double delta_t(system_clock::time_point bef);
 

@@ -92,7 +92,7 @@ void Car::humanChangeWheelAng(double position)
     wheelAng = position;
 }
 
-vector<double> Car::radar(vector<Way> &ways)
+vector<double> Car::radar()
 {
     vector<double> result;
     double minimum = 100;
@@ -115,21 +115,23 @@ vector<double> Car::radar(vector<Way> &ways)
             ang = angle - 15;
         else
             ang = angle - 30;
-
-        for(const Way &way : ways)
+        for(Road* road: roads)
         {
-            for(unsigned int j = 1; j < way.points.size(); j++)
+            for(const Way &way : road->ways)
             {
-                double xA = way.points[j-1].x;
-                double yA = way.points[j-1].y;
+                for(unsigned int j = 1; j < way.points.size(); j++)
+                {
+                    double xA = way.points[j-1].x;
+                    double yA = way.points[j-1].y;
 
-                double xB = way.points[j].x;
-                double yB = way.points[j].y;
+                    double xB = way.points[j].x;
+                    double yB = way.points[j].y;
 
-                double tmp = dist(ang, x, y, xA, yA, xB, yB);
+                    double tmp = dist(ang, x, y, xA, yA, xB, yB);
 
-                if(tmp < minimum)
-                    minimum = tmp;
+                    if(tmp < minimum)
+                        minimum = tmp;
+                }
             }
         }
         result.push_back(minimum);

@@ -80,7 +80,8 @@ void newcar(const int id)
         if(id == car)
             return;
     }
-    roads[12].cars.push_back(new Car(id, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7));
+    cars.push_back(new Car(id, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7));
+    cars.back()->roads = all_roads;
 
     cars_id.push_back(id);
 
@@ -89,7 +90,7 @@ void newcar(const int id)
 
 void movecar(const int id, const double x, const double y)
 {
-    for(Car* &car: roads[12].cars)
+    for(Car* car: cars)
     {
         if(id == car->carId)
         {
@@ -102,7 +103,7 @@ void movecar(const int id, const double x, const double y)
 
 void rotatecar(const int id, const double angle)
 {
-    for(Car* &car: roads[12].cars)
+    for(Car* car: cars)
     {
         if(id == car->carId)
         {
@@ -114,20 +115,23 @@ void rotatecar(const int id, const double angle)
 
 void killcar(const int id)
 {
-    for(unsigned int i = 0; i < roads[12].cars.size(); i++)
+    for(unsigned int i = 0; i < cars.size(); i++)
     {
-        if(id == roads[12].cars[i]->getId())
+        if(id == cars[i]->getId())
         {
-            roads[12].broken_cars.push_back(new Rectangle(roads[12].cars[i]->car_borders->corners));
+            for(Road* road: cars[i]->roads)
+            {
+                road->broken_cars.push_back(new Rectangle(cars[i]->car_borders->corners));
 
-            roads[12].cars.erase(roads[12].cars.begin() + i, roads[12].cars.begin() + i + 1);
+                cars.erase(cars.begin() + i, cars.begin() + i + 1);
+            }
         }
     }
 }
 
 void setautopilot(int id, int _switch)
 {
-    for(Car* &car: roads[12].cars)
+    for(Car* car: cars)
     {
         if(id == car->getId())
         {

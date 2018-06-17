@@ -23,5 +23,5 @@ struct Rectangle
 
     bool intersection(Node A, Node B);
 
-    bool intersection(Rectangle *&car);
+    bool intersection(Rectangle *car);
 };

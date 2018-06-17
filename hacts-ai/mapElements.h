@@ -7,6 +7,8 @@ using namespace std;
 class Car;
 struct Rectangle;
 
+extern vector<Car*> cars;
+
 struct Node
 {
     double x;
@@ -28,9 +30,14 @@ struct Way
 
 struct Road
 {
+    long long id;
     vector<Way> ways;
-    vector<Car*> cars;
     vector<Rectangle*> broken_cars;
+
+    Road(long long nr)
+    {
+        id = nr;
+    }
 
     void crashes(); // kraksa 2 samochodow oraz wjazdy w bande
 };

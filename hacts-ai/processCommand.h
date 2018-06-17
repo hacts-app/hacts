@@ -8,9 +8,14 @@
 using namespace std;
 using namespace chrono;
 
+struct Road;
+class Car;
+
 extern map<int, pair<int, double>> switches;
 extern system_clock::time_point start;
 extern vector<int> cars_id;
+extern vector<Car*> cars;
+extern vector<Road*> all_roads;
 
 void processCommand(const string &command);
 
