@@ -259,7 +259,7 @@ void MainWindow::setTurning(int direction)
 void MainWindow::updateSteeringDial(int value)
 {
     ui->steeringWheelDial->setValue(
-                std::clamp(ui->steeringWheelDial->value() + value, 0, 10000));
+                clamp(ui->steeringWheelDial->value() + value, 0, 10000));
 
 }
 

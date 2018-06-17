@@ -96,19 +96,24 @@ vector<double> Car::radar(vector<Way> &ways)
     vector<double> result;
     double minimum = 100;
 
-    for(int k = 0; k < 14; k++)
+    for(int k = 0; k < 7; k++)
     {
         double ang;
 
-        if(k < 7)
-            ang = angle + (k * 15.0);
-        else if(k == 7)
-            ang = angle + 180.0;
+        if(k == 0 )
+            ang = angle + 30;
+        else if(k == 1)
+            ang = angle + 15;
+        else if(k == 2)
+            ang = angle + 5;
+        else if(k == 3)
+            ang = angle;
+        else if(k == 4)
+            ang = angle - 5;
+        else if(k == 5)
+            ang = angle - 15;
         else
-            ang = angle + (270 + (k-8) * 15.0);
-
-        //while(ang >= 360)
-        //    ang-=360;
+            ang = angle - 30;
 
         for(const Way &way : ways)
         {

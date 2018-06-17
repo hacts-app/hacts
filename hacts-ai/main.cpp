@@ -5,7 +5,6 @@
 using namespace std;
 using namespace chrono;
 
-
 #ifdef _WIN32
 #include <windows.h>
 static void fixPlatformQuirks() {
