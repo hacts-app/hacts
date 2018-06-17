@@ -206,12 +206,13 @@ void MainWindow::displayOptionsForCar(CarID id, const QString &name)
         setAcceleration(id, _oldacceleration);
         setAcceleration(selectedCarID, 0);
     }
-    ui->steeringWheelDial->setValue(carTurn.value(selectedCarID, 5000));
 
     isAnyCarSelected = true;
     selectedCarID = id;
     ui->carOptionsGroupBox->setTitle(name);
     ui->carOptionsGroupBox->show();
+
+    ui->steeringWheelDial->setValue(carTurn.value(id, 5000));
 }
 
 void MainWindow::focusCarOnTree(CarID id)
