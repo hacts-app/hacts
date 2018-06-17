@@ -414,3 +414,8 @@ void MainWindow::carPutDownByUser(CarID id)
     QPointF pos = cars[id]->pos();
     send(QString("movecar %1 %2 %3\n").arg(id).arg(pos.x(), 0, 'g', 15).arg(pos.y(), 0, 'g', 15).toUtf8());
 }
+
+void MainWindow::on_autoPilotCheckBox_stateChanged(int checked)
+{
+    autopilot = !!checked;
+}

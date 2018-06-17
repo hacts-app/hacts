@@ -56,10 +56,14 @@ private slots:
     void on_steeringWheelDial_valueChanged(int position);
 
     void carPutDownByUser(CarID id);
+
+    void on_autoPilotCheckBox_stateChanged(int checked);
+
 private:
     bool paused = false;
     int newCarId = 1; // how many cars does ai create?
 
+    bool autopilot = true;
     bool sliderPressed = false;
 
     QSet<Qt::Key> heldKeys;
