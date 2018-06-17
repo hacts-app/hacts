@@ -4,6 +4,7 @@
 #include <QBrush>
 #include <QColor>
 #include <QPen>
+#include <QGraphicsPolygonItem>
 
 CarShape::CarShape(qint64 id, qreal width, qreal length, QGraphicsItem *parent) :
     QGraphicsPolygonItem(parent),
@@ -18,6 +19,8 @@ CarShape::CarShape(qint64 id, qreal width, qreal length, QGraphicsItem *parent) 
 
     setBrush(QBrush(QColor("#6495ED")));
 
+    setFlag(ItemIsMovable);
+
     QPen pen;
     pen.setWidthF(0.1);
     setPen(pen);
@@ -29,4 +32,22 @@ CarShape::CarShape(qint64 id, qreal width, qreal length, QGraphicsItem *parent) 
     };
     arrow->setPolygon(arrowShape);
     arrow->setPen(pen);
+}
+
+bool CarShape::isMovedByHand()
+{
+    return isBeingMovedByHand;
+}
+
+void CarShape::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    isBeingMovedByHand = true;
+    QGraphicsPolygonItem::mousePressEvent(event);
+}
+
+void CarShape::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    isBeingMovedByHand = false;
+    QGraphicsPolygonItem::mouseReleaseEvent(event);
+    emit putDownByUser(getId());
 }
