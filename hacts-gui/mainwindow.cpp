@@ -209,6 +209,12 @@ void MainWindow::displayOptionsForCar(CarID id, const QString &name)
         setAcceleration(selectedCarID, 0);
     }
 
+    if(isAnyCarSelected) {
+        // went from a selected car to another selected car
+
+        sendAutopilot(selectedCarID, true); // the old car should drive itself now
+    }
+
     isAnyCarSelected = true;
     selectedCarID = id;
     ui->carOptionsGroupBox->setTitle(name);
@@ -246,6 +252,8 @@ void MainWindow::displayCarAngleIfNeeded(CarID id, double angleInDegrees)
 
 void MainWindow::setAcceleration(CarID id, int direction)
 {
+    ensureNotAutopilotOnSelected();
+
     //qDebug() << QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8();
     send(QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8());
     _oldacceleration = direction;
@@ -253,6 +261,8 @@ void MainWindow::setAcceleration(CarID id, int direction)
 
 void MainWindow::setTurning(int direction)
 {
+    ensureNotAutopilotOnSelected();
+
     _turningNow = direction;
     if(direction == 0) {
         if(turningTimer != nullptr) {
@@ -263,7 +273,7 @@ void MainWindow::setTurning(int direction)
     } else {
         if(turningTimer == nullptr) {
             turningTimer = new QTimer(this);
-            connect(turningTimer, SIGNAL(timeout()), this, SLOT(turningTimerFired()));
+            connect(turningTimer, &QTimer::timeout, this, &MainWindow::turningTimerFired);
             turningTimer->start(30);
         }
     }
@@ -278,7 +288,23 @@ void MainWindow::updateSteeringDial(int value)
 
 void MainWindow::sendTurn(CarID id, double turn)
 {
+    ensureNotAutopilotOnSelected();
     send(QString("setsteeringangle %1 %2\n").arg(id).arg(turn, 0, 'g', 15).toUtf8());
+}
+
+void MainWindow::sendAutopilot(CarID id, bool autopilot)
+{
+    send(QString("setautopilot %1 %2\n").arg(id).arg(autopilot ? "1" : "0").toUtf8());
+}
+
+void MainWindow::ensureNotAutopilotOnSelected()
+{
+    if(!isAnyCarSelected)
+        return;
+
+    if(ui->autoPilotCheckBox->checkState() != Qt::Unchecked) {
+        ui->autoPilotCheckBox->setCheckState(Qt::Unchecked);
+    }
 }
 
 void MainWindow::send(const QByteArray &data)
@@ -355,7 +381,12 @@ void MainWindow::treeSelectionChanged(const QItemSelection &selected, const QIte
 
     QModelIndexList selectedIndexes = selected.indexes();
     if(selectedIndexes.empty() || selectedIndexes.first().parent() != treeModel->index(0, 0)) {
+        // selected a non-car
         ui->carOptionsGroupBox->hide();
+        if(isAnyCarSelected) {
+            // from a selected car
+            sendAutopilot(selectedCarID, false);
+        }
         isAnyCarSelected = false;
         return;
     }
@@ -373,6 +404,7 @@ void MainWindow::on_deleteSelected_clicked()
 
 void MainWindow::on_dial_sliderMoved(int position)
 {
+    ensureNotAutopilotOnSelected();
     double angle = -qDegreesToRadians(position * 0.1) - 0.5*M_PI;
     send(QString("rotatecar %1 %2\n").arg(selectedCarID).arg(angle, 0, 'g', 15).toUtf8());
 }
@@ -393,6 +425,8 @@ void MainWindow::turningTimerFired()
     if(!isAnyCarSelected)
         return;
 
+    ensureNotAutopilotOnSelected();
+
     if(! carTurn.contains(selectedCarID))
         carTurn[selectedCarID] = 0;
 
@@ -412,4 +446,15 @@ void MainWindow::carPutDownByUser(CarID id)
 {
     QPointF pos = cars[id]->pos();
     send(QString("movecar %1 %2 %3\n").arg(id).arg(pos.x(), 0, 'g', 15).arg(pos.y(), 0, 'g', 15).toUtf8());
+}
+
+void MainWindow::on_autoPilotCheckBox_stateChanged(int checked)
+{
+    if(!isAnyCarSelected)
+        return;
+    sendAutopilot(selectedCarID, !!checked);
+
+    if(!!checked) {
+        ui->steeringWheelDial->setValue(5000); // reset the steering wheel as autopilot takes control
+    }
 }
