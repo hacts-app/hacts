@@ -19,6 +19,15 @@
 
 static qreal carwidth = 1.7, carheight = 4.02;
 
+template <typename T>
+static inline T myClamp(T a, T b, T c) {
+    if(a < b)
+        return b;
+    if(a > c)
+        return c;
+    return a;
+}
+
 static inline double steeringDialToValue(int position) {
    return (position - 5000) / 10000.0 * 2.0;
 }
@@ -233,7 +242,8 @@ void MainWindow::displayCarAngleIfNeeded(CarID id, double angleInDegrees)
 
 void MainWindow::setAcceleration(CarID id, int direction)
 {
-    qDebug() << QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8();
+    //qDebug() << QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8();
+    process->write(QString("setacceleration %1 %2\n").arg(id).arg(direction).toUtf8());
     _oldacceleration = direction;
 }
 
@@ -259,13 +269,13 @@ void MainWindow::setTurning(int direction)
 void MainWindow::updateSteeringDial(int value)
 {
     ui->steeringWheelDial->setValue(
-                std::clamp(ui->steeringWheelDial->value() + value, 0, 10000));
+                myClamp(ui->steeringWheelDial->value() + value, 0, 10000));
 
 }
 
 void MainWindow::sendTurn(CarID id, double turn)
 {
-    qDebug() << QString("setsteeringangle %1 %2\n").arg(id).arg(turn, 0, 'g', 15).toUtf8();
+    process->write(QString("setsteeringangle %1 %2\n").arg(id).arg(turn, 0, 'g', 15).toUtf8());
 }
 
 void MainWindow::on_zoomInButton_clicked()
