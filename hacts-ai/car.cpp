@@ -87,7 +87,12 @@ void Car::changeWheelAng(double intensity, double delta)
 
 void Car::humanChangeWheelAng(double position)
 {
-    position *= -40;
+    if(position > 1)
+        position = 1;
+    else if(position < -1)
+        position = -1;
+
+    position *= 40;
 
     wheelAng = position;
 }
@@ -102,9 +107,9 @@ vector<double> Car::radar()
         double ang;
 
         if(k == 0 )
-            ang = angle + 30;
+            ang = angle + 75;
         else if(k == 1)
-            ang = angle + 15;
+            ang = angle + 30;
         else if(k == 2)
             ang = angle + 5;
         else if(k == 3)
@@ -112,9 +117,9 @@ vector<double> Car::radar()
         else if(k == 4)
             ang = angle - 5;
         else if(k == 5)
-            ang = angle - 15;
-        else
             ang = angle - 30;
+        else
+            ang = angle - 75;
         for(Road* road: roads)
         {
             for(const Way &way : road->ways)

@@ -63,6 +63,7 @@ public:
     bool get_auto() {return auto_drive;}
     void set_auto(bool change) {auto_drive = change;}
     double getV() {return velocity;}
+    double getWheelAng() {return wheelAng;}
 
     friend void movecar(const int id, const  double x, const  double y);
     friend void rotatecar(const int id, const double angle);

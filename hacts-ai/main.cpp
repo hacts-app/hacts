@@ -42,34 +42,36 @@ const T linemax(vector<T> vector)
 void ai(Car* car, const double &delta)
 {
     vector<double> radar = car->radar();
+    double safety; // im dalej bandy tym wieksze safety i mocniej kreci kolami
 
-    if(radar[0] < 5) // zbliza sie do krawedzi i awaryjnie odjeżdza
-        car->humanChangeWheelAng(0.2);
-    else if(radar[6] < 5)
-        car->humanChangeWheelAng(-0.2);
-    else if(radar[3] == linemax(radar))  // od tego miejsca szuka najlepszej drogi do jazdy
+    if(radar[0] < 2.33 || radar[1] < 4.5) // zbliza sie do krawedzi i awaryjnie odjeżdza
+    {
+        safety = min(radar[0]*1.93, radar[1]);
+        car->humanChangeWheelAng(0.286*safety - 1.287); // ---
+    }
+    else if(radar[6] < 2.33 || radar[5] < 4.5)
+    {
+        safety = min(radar[6]*1.93, radar[5]);
+        car->humanChangeWheelAng(-0.286*safety + 1.287); // +++
+    }
+    else if(radar[2] > radar[3] && radar[2] > radar[4]) // od tego miejsca szuka najlepszej drogi do jazdy
+    {
+        safety = min(radar[0]*1.93, radar[1]);
+        car->humanChangeWheelAng(0.4*safety - 1.8); // +++
+    }
+    else if(radar[4] > radar[3] && radar[4] > radar[2])
+    {
+        safety = min(radar[6]*1.93, radar[5]);
+        car->humanChangeWheelAng(-0.4*safety + 1.8);
+    }
+    else                                 // domyslnie trzyma kola rowno
         car->humanChangeWheelAng(0);
-    else if(radar[2] == linemax(radar))
-        car->humanChangeWheelAng(-0.1);
-    else if(radar[4] == linemax(radar))
-        car->humanChangeWheelAng(0.1);
-    else if(radar[1] == linemax(radar))
-        car->humanChangeWheelAng(-0.2);
-    else if(radar[5] == linemax(radar))
-        car->humanChangeWheelAng(0.2);
-    else if(radar[0] == linemax(radar))
-        car->humanChangeWheelAng(-0.5);
-    else if(radar[6] == linemax(radar))
-        car->humanChangeWheelAng(0.5);
 
-    if(linemax(radar) > 90 && car->getV() < 40)
-        car->onGasPush(0.5, delta);
-    else if(linemax(radar) > 50 && car->getV() < 20)
-        car->onGasPush(0.5, delta);
-    else if(linemax(radar) > 15 && car->getV() < 15)
+        // predkosc ...  wzor v = 0.4*s - 1 ... zawsze stara sie dazyc do tej predkosci
+    if(car->getV() < 0.4*radar[3] - 1)
         car->onGasPush(0.3, delta);
-    else if(linemax(radar) < 10 && car->getV() > 2)
-        car->onBrakePush(1, delta);
+    else
+        car->onBrakePush(0.3, delta);
 
 }
 
@@ -85,7 +87,13 @@ void player(Car* car, const double &delta)
             else if(values.second.first == -1)
                 car->onBrakePush(1, delta);
 
-            car->humanChangeWheelAng(values.second.second);
+            car->humanChangeWheelAng(-values.second.second);
+
+            if(values.second.second > 0)
+                values.second.second -= 0.1 * delta;
+            else if(values.second.second < 0)
+                values.second.second += 0.1 * delta;
+
             break;
         }
     }
