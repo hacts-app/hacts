@@ -15,6 +15,8 @@ QMAKE_CXXFLAGS += -std=gnu++17 -ffast-math
 
 DESTDIR = $$_PRO_FILE_PWD_/../out
 
+INCLUDEPATH += $$_PRO_FILE_PWD_/../lib
+
 SOURCES += \
     main.cpp \
     inputhandler.cpp \
