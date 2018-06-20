@@ -17,15 +17,7 @@ struct Node
 
 struct Way
 {
-    int id;
-    vector<int> neighboursId = {};
-    vector<Node> points = {};
-
-    Way(int num, vector<int> neighbours)
-    {
-        id = num;
-        neighboursId = neighbours;
-    }
+    vector<Node> points;
 };
 
 struct Road
@@ -41,3 +33,5 @@ struct Road
 
     void crashes(); // kraksa 2 samochodow oraz wjazdy w bande
 };
+
+vector<Way> split_way(Way long_way);
