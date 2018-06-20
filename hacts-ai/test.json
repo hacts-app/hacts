@@ -1,0 +1,16 @@
+{
+	"to": {
+		"jest": {
+            "przyklad": ":P",
+            "jakis objekt": {
+                "costam1": ":O",
+                "costam2": ":X"
+            }
+        },
+		"tablica": [
+            { "costam": 12 },
+            { "costam": 1234 },
+            { "costam": 12345678 }
+        ]
+	}
+}

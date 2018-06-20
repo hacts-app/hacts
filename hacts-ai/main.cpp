@@ -91,8 +91,40 @@ void player(Car* car, const double &delta)
     }
 }
 
+
+
+// example:
+
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
+#include <fstream>
+
+namespace json = rapidjson;
+
+void readJson() {
+    ifstream ifs("../hacts-ai/test.json");
+    json::IStreamWrapper stream(ifs);
+
+    json::Document doc;
+    doc.ParseStream(stream);
+
+    clog << doc["to"]["jest"]["przyklad"].GetString() << "\n";
+
+    for(const auto &element : doc["to"]["tablica"].GetArray()) {
+        clog << element["costam"].GetInt64() << "\n";
+    }
+
+    for(const auto &element : doc["to"]["jest"]["jakis objekt"].GetObject()) {
+        clog << element.name.GetString() << " = " << element.value.GetString() << "\n";
+    }
+}
+
+
+
 int main()
 {
+
+    readJson();
 
     fixPlatformQuirks();
 
