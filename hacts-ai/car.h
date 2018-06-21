@@ -41,10 +41,10 @@ public:
     void onBrakePush(double per, double delta);
        // tak jak w gazie
 
-    void changeWheelAng(double intensity, double delta);
+    void smoothChangeWheelAng(double position, double delta);
        // od -1 do 1 .. ujemne skrecaja w prawo dodatnie w lewo
 
-    void humanChangeWheelAng(double position);
+    void quickChangeWheelAng(double position);
 
     void showPos(); // informacje dla nas
 
@@ -64,6 +64,7 @@ public:
     void set_auto(bool change) {auto_drive = change;}
     double getV() {return velocity;}
     double getWheelAng() {return wheelAng;}
+    double getLen() {return length;}
 
     friend void movecar(const int id, const  double x, const  double y);
     friend void rotatecar(const int id, const double angle);

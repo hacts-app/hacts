@@ -31,14 +31,6 @@ vector<Road*> all_roads;
 
 const string path = "data.txt";
 
-template < typename T >
-const T linemax(vector<T> vector)
-{
-    sort(vector.begin(), vector.end());
-
-    return vector[vector.size()-1];
-}
-
 void ai(Car* car, const double &delta)
 {
     vector<double> radar = car->radar();
@@ -47,31 +39,31 @@ void ai(Car* car, const double &delta)
     if(radar[0] < 2.33 || radar[1] < 4.5) // zbliza sie do krawedzi i awaryjnie odjeżdza
     {
         safety = min(radar[0]*1.93, radar[1]);
-        car->humanChangeWheelAng(0.286*safety - 1.287); // ---
+        car->quickChangeWheelAng(0.286*safety - 1.287); // --->    ang = a * safety + b
     }
     else if(radar[6] < 2.33 || radar[5] < 4.5)
     {
         safety = min(radar[6]*1.93, radar[5]);
-        car->humanChangeWheelAng(-0.286*safety + 1.287); // +++
+        car->quickChangeWheelAng(-0.286*safety + 1.287); // <---
     }
-    else if(radar[2] > radar[3] && radar[2] > radar[4]) // od tego miejsca szuka najlepszej drogi do jazdy
+    else if(radar[2] > radar[3] && radar[2] > radar[4] && car->getWheelAng() < 6) // od tego miejsca szuka najlepszej drogi do jazdy
     {
         safety = min(radar[0]*1.93, radar[1]);
-        car->humanChangeWheelAng(0.4*safety - 1.8); // +++
+        car->smoothChangeWheelAng(0.2*safety - 0.9, delta); // <---
     }
-    else if(radar[4] > radar[3] && radar[4] > radar[2])
+    else if(radar[4] > radar[3] && radar[4] > radar[2] && car->getWheelAng() > -6)
     {
         safety = min(radar[6]*1.93, radar[5]);
-        car->humanChangeWheelAng(-0.4*safety + 1.8);
+        car->smoothChangeWheelAng(-0.2*safety + 0.9, delta); // --->
     }
-    else                                 // domyslnie trzyma kola rowno
-        car->humanChangeWheelAng(0);
+    else                                 // domyslnie dazy do rownych kol
+        car->smoothChangeWheelAng(0, delta);
 
         // predkosc ...  wzor v = 0.4*s - 1 ... zawsze stara sie dazyc do tej predkosci
-    if(car->getV() < 0.4*radar[3] - 1)
-        car->onGasPush(0.3, delta);
+    if(car->getV() < 0.4*(radar[3]-0.5*car->getLen()) - 1)
+        car->onGasPush(0.8, delta);
     else
-        car->onBrakePush(0.3, delta);
+        car->onBrakePush(1, delta);
 
 }
 
@@ -87,13 +79,13 @@ void player(Car* car, const double &delta)
             else if(values.second.first == -1)
                 car->onBrakePush(1, delta);
 
-            car->humanChangeWheelAng(-values.second.second);
-
+            car->quickChangeWheelAng(-values.second.second);
+/*
             if(values.second.second > 0)
-                values.second.second -= 0.1 * delta;
+                values.second.second -= 0.4 * delta;
             else if(values.second.second < 0)
-                values.second.second += 0.1 * delta;
-
+                values.second.second += 0.4 * delta;
+*/
             break;
         }
     }

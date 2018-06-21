@@ -71,21 +71,35 @@ void Car::onBrakePush(double per, double delta)
         velocity = 0;
 }
 
-void Car::changeWheelAng(double intensity, double delta)
+void Car::smoothChangeWheelAng(double position, double delta)
 {
-    const int max_rot = 15 ; // maksymalna predkosc zmiany kata  kol w sekundzie
+    const int max_rot = 15;
 
-    double rot = max_rot * intensity;
+    if(position > 1)
+        position = 1;
+    else if(position < -1)
+        position = -1;
 
-    wheelAng += rot * delta;
+    position *= 40;
+
+    if(fabs(position - wheelAng) > max_rot * delta) // jesli roznica oczekiwanego kata i prawdziwego jest
+    {                                       // wieksza niz 15 stopni na sekunde
+        if(position > wheelAng)
+            wheelAng += max_rot * delta;
+        else
+            wheelAng -= max_rot * delta;
+    }
+    else
+        wheelAng = position;
 
     if(wheelAng > 40)
         wheelAng = 40;
-    else if(wheelAng < -40)
+    if(wheelAng < -40)
         wheelAng = -40;
+
 }
 
-void Car::humanChangeWheelAng(double position)
+void Car::quickChangeWheelAng(double position)
 {
     if(position > 1)
         position = 1;
@@ -99,12 +113,13 @@ void Car::humanChangeWheelAng(double position)
 
 vector<double> Car::radar()
 {
-    vector<double> result;
-    double minimum = 100;
+    vector<double> result; 
+    double tmp;
 
     for(int k = 0; k < 7; k++)
     {
         double ang;
+        double minimum = 100;
 
         if(k == 0 )
             ang = angle + 75;
@@ -120,29 +135,66 @@ vector<double> Car::radar()
             ang = angle - 30;
         else
             ang = angle - 75;
-        for(Road* road: roads)
+        for(Road* road: roads) // krawedzie
         {
             for(const Way &way : road->ways)
             {
                 for(unsigned int j = 1; j < way.points.size(); j++)
                 {
-                    double xA = way.points[j-1].x;
-                    double yA = way.points[j-1].y;
-
-                    double xB = way.points[j].x;
-                    double yB = way.points[j].y;
-
-                    double tmp = dist(ang, x, y, xA, yA, xB, yB);
+                    tmp = dist(ang, x, y,
+                               way.points[j-1].x, way.points[j-1].y,
+                               way.points[j].x, way.points[j].y);
 
                     if(tmp < minimum)
                         minimum = tmp;
                 }
             }
+            for(Rectangle* dead_car: road->broken_cars)
+            {
+                for(int i = 0; i < 4; i++)
+                {
+                    if(i == 0)
+                    {
+                        tmp = dist(ang, x, y,
+                                   dead_car->corners[3].x, dead_car->corners[3].y,
+                                   dead_car->corners[i].x, dead_car->corners[i].y);
+                    }
+                    else
+                    {
+                        tmp = dist(ang, x, y,
+                                   dead_car->corners[i-1].x, dead_car->corners[i-1].y,
+                                   dead_car->corners[i].x, dead_car->corners[i].y);
+                    }
+                    if(tmp < minimum)
+                        minimum = tmp;
+                }
+            }
+        }
+        for(Car* car: cars) // samochody
+        {
+            if(this == car)
+                continue;
+
+            for(int i = 0; i < 4; i++)
+            {
+                if(i == 0)
+                {
+                    tmp = dist(ang, x, y,
+                               car->car_borders->corners[3].x, car->car_borders->corners[3].y,
+                               car->car_borders->corners[i].x, car->car_borders->corners[i].y);
+                }
+                else
+                {
+                    tmp = dist(ang, x, y,
+                               car->car_borders->corners[i-1].x, car->car_borders->corners[i-1].y,
+                               car->car_borders->corners[i].x, car->car_borders->corners[i].y);
+                }
+                if(tmp < minimum)
+                    minimum = tmp;
+            }
         }
         result.push_back(minimum);
-
-        minimum = 100;
-    }
+    }// for(k)
     return result;
 }
 

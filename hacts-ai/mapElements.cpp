@@ -54,3 +54,37 @@ void Road::crashes()
         cars.erase(cars.begin() + x, cars.begin() + x + 1);
     }
 }
+
+vector<Way> split_way(Way long_way)
+{
+    vector<Way> results;
+    bool first = true;
+
+    Node center = long_way.points[0];
+
+    for(const Node &point: long_way.points)
+    {
+        if(first)
+        {
+            result.push_back(Way{point});
+            first = false;
+            continue;
+        }
+        if(point.x > center.x + 50 || point.x < center.x - 50 ||
+           point.y > center.y + 50 || point.y < center.y - 50)
+        {
+            result.push_back(Way());
+            center = point;
+        }
+        results.back().points.push_back(point);
+    }
+    return results;
+}
+
+
+
+
+
+
+
+
