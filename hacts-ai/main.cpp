@@ -29,7 +29,7 @@ vector<int> cars_id {};
 vector<Car*> cars;
 vector<Road*> all_roads;
 
-const string path = "data.txt";
+string path = "data.json";
 
 void ai(Car* car, const double &delta)
 {
@@ -59,8 +59,8 @@ void ai(Car* car, const double &delta)
     else                                 // domyslnie dazy do rownych kol
         car->smoothChangeWheelAng(0, delta);
 
-        // predkosc ...  wzor v = 0.4*s - 1 ... zawsze stara sie dazyc do tej predkosci
-    if(car->getV() < 0.4*(radar[3]-0.5*car->getLen()) - 1)
+        // predkosc ...  wzor v = 0.5*s - 1 ... zawsze stara sie dazyc do tej predkosci
+    if(car->getV() < 0.5*(radar[3]-0.5*car->getLen()) - 1)
         car->onGasPush(0.8, delta);
     else
         car->onBrakePush(1, delta);
@@ -95,11 +95,7 @@ void player(Car* car, const double &delta)
 
 // example:
 
-#include "rapidjson/document.h"
-#include "rapidjson/istreamwrapper.h"
-#include <fstream>
-
-namespace json = rapidjson;
+/*
 
 void readJson() {
     ifstream ifs("../hacts-ai/test.json");
@@ -119,12 +115,12 @@ void readJson() {
     }
 }
 
+*/
+
 
 
 int main()
 {
-
-    readJson();
 
     fixPlatformQuirks();
 

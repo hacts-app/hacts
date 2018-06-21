@@ -147,34 +147,61 @@ double dist(double ang, double xG, double yG, double xA, double yA, double xB, d
     return 60; // max zasieg wzroku
 }
 
-void setRoads(const string path)
+void setRoads(string path)
 {
-    fstream file;
-    string medium;
+    ifstream file(path);
+    json::IStreamWrapper stream(file);
 
-    file.open(path, ios::in);
+    json::Document doc;
+    doc.ParseStream(stream);
 
-    while(getline(file, medium))
+    const int left = 0, right = 1;
+
+    for(const auto &road : doc["roads"].GetArray())
     {
-        vector<string> elements = split(medium, '\t');
+        Road* tmp = new Road(road["id"].GetInt64());
 
-        int nr = stoll(elements[1]);
-
-        vector<int> neighbours= vec_stoi(split(elements[2], ','));
-
-        Road* tmp = new Road(nr);
-
-        tmp->ways.push_back(Way{stoi(elements[0]) ,neighbours}); // dodajemy do drogi nowy Way ( jeszcze bez nodow)
-
-        vector<double> coords = vec_stod(split(elements[3], ','));
-
-        for(unsigned int i = 1; i < coords.size(); i+=2)
+        for(unsigned int i = 1; i < doc["ways"][road["hardborders"][left].GetInt64()].Size(); i += 2)
         {
-            tmp->ways.back().points.push_back(Node{coords[i-1], coords[i]}); // dodawanie wszystkich wezlow do drogi
+            double x = doc["ways"][road["hardborders"][left].GetInt64()][i-1].GetDouble();
+            double y = doc["ways"][road["hardborders"][left].GetInt64()][i].GetDouble();
+
+            tmp->loWay.points.push_back(Node{x, y});
         }
+
+        for(unsigned int i = 1; i < doc["ways"][road["hardborders"][right].GetInt64()].Size(); i += 2)
+        {
+            double x = doc["ways"][road["hardborders"][right].GetInt64()][i-1].GetDouble();
+            double y = doc["ways"][road["hardborders"][right].GetInt64()][i].GetDouble();
+
+            tmp->hiWay.points.push_back(Node{x, y});
+        }
+        int k = 0;
+        for(const auto &lane: road["lanes"].GetArray())
+        {
+            tmp->lanes.push_back(Lane());
+            for(unsigned int i = 1; i < doc["ways"][lane[left].GetInt64()].Size(); i += 2)
+            {
+                double x = doc["ways"][lane[left].GetInt64()][i-1].GetDouble();
+                double y = doc["ways"][lane[left].GetInt64()][i].GetDouble();
+
+                tmp->lanes.back().loWay.points.push_back(Node{x, y});
+            }
+
+            for(unsigned int i = 1; i < doc["ways"][lane[right].GetInt64()].Size(); i += 2)
+            {
+                double x = doc["ways"][lane[right].GetInt64()][i-1].GetDouble();
+                double y = doc["ways"][lane[right].GetInt64()][i].GetDouble();
+               // clog << x << " " << y << " " ;
+
+                tmp->lanes.back().hiWay.points.push_back(Node{x, y});
+                //clog << tmp.lanes.back().hiWay.points.back().x << " " << tmp.lanes.back().hiWay.points.back().y << endl;
+            }
+            k++;
+        }
+
         all_roads.push_back(tmp);
     }
-
 }
 
 Node moveNode(double x, double y, double a, double R)

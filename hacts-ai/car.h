@@ -53,7 +53,7 @@ public:
     vector<double> radar();
     // petla ktora liczy zblizone (pod stalymi katami) odleglosci od krawedzi drogi [POKI CO BRAK DETEKCJI INNYCH POJAZDOW]
 
-    bool onRoad(vector<Way> &ways);
+    bool onRoad(Way &way);
     // sprawdza czy skrajne punkty (A,B,C,D) zawieraja sie w drodze po ktorej jedzie
 
     void changePos(double delta);

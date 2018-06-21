@@ -8,7 +8,7 @@ void Road::crashes()
 
     for(unsigned int i = 0; i < cars.size(); i++) // wjazdy w sciany
     {
-        if(!cars[i]->onRoad(this->ways))
+        if(!cars[i]->onRoad(this->loWay) || !cars[i]->onRoad(this->hiWay))
         {
             list_of_destroyed.push_back(i);
         }
@@ -54,7 +54,7 @@ void Road::crashes()
         cars.erase(cars.begin() + x, cars.begin() + x + 1);
     }
 }
-
+/*
 vector<Way> split_way(Way long_way)
 {
     vector<Way> results;
@@ -80,7 +80,7 @@ vector<Way> split_way(Way long_way)
     }
     return results;
 }
-
+*/
 
 
 

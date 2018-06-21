@@ -8,7 +8,6 @@
 #include <cmath>
 #include <sstream>
 #include <iterator>
-#include <fstream>
 #include <string>
 #include <map>
 #include "processCommand.h"
@@ -17,14 +16,19 @@
 #include "car.h"
 #include "rectangle.h"
 #include "mapElements.h"
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
+#include <fstream>
 
 using namespace std;
 using namespace chrono;
+namespace json = rapidjson;
 
 #define PI 3.14159265
 
 struct Node;
 struct Way;
+struct Lane;
 struct Road;
 struct Rectangle;
 class Car;
@@ -58,6 +62,6 @@ bool check_inter(Node A, Node B, Node C);
 double dist(double ang, double xG, double yG, double xA, double yA, double xB, double yB); // odległosc miedzy samochodem a odcinkiem
               //kat prostej,              auto(a,y) ,                    a(x,y)            i           b(x,y)
 
-void setRoads(const string path);
+void setRoads(string path);
 
 Node moveNode(double x, double y, double a, double R);

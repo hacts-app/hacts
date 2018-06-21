@@ -20,10 +20,18 @@ struct Way
     vector<Node> points;
 };
 
+struct Lane
+{
+    Way loWay;
+    Way hiWay;
+};
+
 struct Road
 {
     long long id;
-    vector<Way> ways;
+    Way loWay;
+    Way hiWay;
+    vector<Lane> lanes;
     vector<Rectangle*> broken_cars;
 
     Road(long long nr)
@@ -34,4 +42,3 @@ struct Road
     void crashes(); // kraksa 2 samochodow oraz wjazdy w bande
 };
 
-vector<Way> split_way(Way long_way);

@@ -135,20 +135,31 @@ vector<double> Car::radar()
             ang = angle - 30;
         else
             ang = angle - 75;
-        for(Road* road: roads) // krawedzie
+        for(Road* road: roads) // dla kazdej drogi na jakiej miesci sie samochod
         {
-            for(const Way &way : road->ways)
+            for(Lane &lane: road->lanes) // zbadaj kazdy pas na tej drodze
             {
-                for(unsigned int j = 1; j < way.points.size(); j++)
+                for(unsigned int j = 1; j < lane.loWay.points.size(); j++)
                 {
                     tmp = dist(ang, x, y,
-                               way.points[j-1].x, way.points[j-1].y,
-                               way.points[j].x, way.points[j].y);
+                               lane.loWay.points[j-1].x, lane.loWay.points[j-1].y,
+                               lane.loWay.points[j].x, lane.loWay.points[j].y);
 
                     if(tmp < minimum)
                         minimum = tmp;
                 }
+                for(unsigned int j = 1; j < lane.hiWay.points.size(); j++)
+                {
+                    tmp = dist(ang, x, y,
+                               lane.hiWay.points[j-1].x, lane.hiWay.points[j-1].y,
+                               lane.hiWay.points[j].x, lane.hiWay.points[j].y);
+
+                    if(tmp < minimum)
+                        minimum = tmp;
+                }
+
             }
+
             for(Rectangle* dead_car: road->broken_cars)
             {
                 for(int i = 0; i < 4; i++)
@@ -198,7 +209,7 @@ vector<double> Car::radar()
     return result;
 }
 
-bool Car::onRoad(vector<Way> &ways)
+bool Car::onRoad(Way &way)
 {
     double R = (sqrt(pow(length, 2) + pow(width, 2))) / 2;
     // promien okregu opisanego na samochodzie
@@ -221,18 +232,17 @@ bool Car::onRoad(vector<Way> &ways)
 
     car_borders->update(carCorners);
 
-    for(const Way &way: ways)
+
+    for(unsigned int i = 1; i < way.points.size(); i++)
     {
-        for(unsigned int i = 1; i < way.points.size(); i++)
-        {
-            Node A = way.points[i-1];
-            Node B = way.points[i];
+        Node A = way.points[i-1];
+        Node B = way.points[i];
 
-            if(car_borders->intersection(A, B)) // jesli przeciecie zwraca prawde
-                return false;                   // to auto nie jest na drodze
+        if(car_borders->intersection(A, B)) // jesli przeciecie zwraca prawde
+            return false;                   // to auto nie jest na drodze
 
-        }
     }
+
     return true;
 }
 
