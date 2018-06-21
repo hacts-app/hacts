@@ -139,20 +139,20 @@ vector<double> Car::radar()
         {
             for(Lane &lane: road->lanes) // zbadaj kazdy pas na tej drodze
             {
-                for(unsigned int j = 1; j < lane.loWay.points.size(); j++)
+                for(unsigned int j = 1; j < lane.left_border.points.size(); j++)
                 {
                     tmp = dist(ang, x, y,
-                               lane.loWay.points[j-1].x, lane.loWay.points[j-1].y,
-                               lane.loWay.points[j].x, lane.loWay.points[j].y);
+                               lane.left_border.points[j-1].x, lane.left_border.points[j-1].y,
+                               lane.left_border.points[j].x, lane.left_border.points[j].y);
 
                     if(tmp < minimum)
                         minimum = tmp;
                 }
-                for(unsigned int j = 1; j < lane.hiWay.points.size(); j++)
+                for(unsigned int j = 1; j < lane.right_border.points.size(); j++)
                 {
                     tmp = dist(ang, x, y,
-                               lane.hiWay.points[j-1].x, lane.hiWay.points[j-1].y,
-                               lane.hiWay.points[j].x, lane.hiWay.points[j].y);
+                               lane.right_border.points[j-1].x, lane.right_border.points[j-1].y,
+                               lane.right_border.points[j].x, lane.right_border.points[j].y);
 
                     if(tmp < minimum)
                         minimum = tmp;

@@ -36,15 +36,15 @@ void ai(Car* car, const double &delta)
     vector<double> radar = car->radar();
     double safety; // im dalej bandy tym wieksze safety i mocniej kreci kolami
 
-    if(radar[0] < 2.33 || radar[1] < 4.5) // zbliza sie do krawedzi i awaryjnie odjeżdza
+    if(radar[6] < 1.25 || radar[5] < 2.412)
+        {
+            safety = min(radar[6]*1.93, radar[5]);
+            car->quickChangeWheelAng(-safety + 2.412); // <---
+        }
+    else if(radar[0] < 1.25 || radar[1] < 2.412) // zbliza sie do krawedzi i awaryjnie odjeżdza
     {
         safety = min(radar[0]*1.93, radar[1]);
-        car->quickChangeWheelAng(0.286*safety - 1.287); // --->    ang = a * safety + b
-    }
-    else if(radar[6] < 2.33 || radar[5] < 4.5)
-    {
-        safety = min(radar[6]*1.93, radar[5]);
-        car->quickChangeWheelAng(-0.286*safety + 1.287); // <---
+        car->quickChangeWheelAng(safety - 2.412); // --->    ang = a * safety + b
     }
     else if(radar[2] > radar[3] && radar[2] > radar[4] && car->getWheelAng() < 6) // od tego miejsca szuka najlepszej drogi do jazdy
     {

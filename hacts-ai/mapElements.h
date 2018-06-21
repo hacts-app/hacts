@@ -22,8 +22,8 @@ struct Way
 
 struct Lane
 {
-    Way loWay;
-    Way hiWay;
+    Way left_border;
+    Way right_border;
 };
 
 struct Road
