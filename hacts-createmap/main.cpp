@@ -322,7 +322,7 @@ static void addNodesToHighway() {
 
         OutputWay *middleLaneDivider = new OutputWay(wayId);
 
-        outputWays << left << middleLaneDivider << right;
+        outputWays << left << right << middleLaneDivider;
 
         // iterate for every element but first
         for(int i = 1; i < way.nodes.length(); i++) {
