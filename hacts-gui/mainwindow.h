@@ -8,6 +8,7 @@
 #include <QStandardItemModel>
 #include <QItemSelection>
 #include <QSet>
+#include <QJsonArray>
 
 #include "graphicsview.h"
 #include "carshape.h"
@@ -23,8 +24,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
 
 protected:
     void keyPressEvent(QKeyEvent *ev) override;
@@ -104,6 +105,8 @@ private:
     void ensureNotAutopilotOnSelected();
 
     void send(const QByteArray &data);
+
+    void drawLine(const QJsonArray &coords);
 };
 
 #endif // MAINWINDOW_H
