@@ -1,6 +1,7 @@
 #include <QObject>
 #include <QSet>
 #include <QMap>
+#include <QVector>
 #include <QMultiMap>
 #include <QtMath>
 #include <QFile>
@@ -8,6 +9,10 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QGeoCoordinate>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
 #include <QDebug>
 
 #define SECTOR_WIDTH 30 // meters
@@ -18,12 +23,19 @@ enum class OneWay { No, Yes, YesReverse };
 struct Node {
     double x;
     double y;
+
+    inline bool fuzzyEqual(const Node &n) const {
+        return qFuzzyCompare(x, n.x) && qFuzzyCompare(y, n.y);
+    }
 };
 
-struct Way {
+struct HighwayWay {
     QString highwayType;
     OneWay oneWay = OneWay::No;
     QVector<qint64> nodes;
+
+    QVector<qint64> hardBorderWays;
+    QVector<qint64> laneWays;
 };
 
 struct OutputWay {
@@ -34,9 +46,14 @@ struct OutputWay {
     OutputWay(qint64 hId) : highwayId(hId) {}
 };
 
+struct Road {
+    qint64 id;
+    QVector<qint64> outputWayIds;
+};
+
 static QMap<qint64, Node> highwayNodes;
 static QMap<qint64, Node> borderNodes;
-static QMap<qint64, Way> ways;
+static QMap<qint64, HighwayWay> highwayWays;
 static QMultiMap<qint64, OutputWay*> sectors;
 static QVector<OutputWay*> outputWays;
 
@@ -118,7 +135,7 @@ static void readWay(QXmlStreamReader &reader) {
     if(! hasAllAttributes(attrs, {"id"}))
         return;
 
-    Way way;
+    HighwayWay way;
 
     bool isDriveableByCar = false;
 
@@ -141,6 +158,8 @@ static void readWay(QXmlStreamReader &reader) {
                 way.highwayType = highwayType;
             }
         // parse <nd ref=".." />
+        } else if(reader.name() == "tag" && attrs.value("k").toString().endsWith("lanes")) {
+            qDebug() << attrs.value("k").toString() << attrs.value("v").toString();
         } else if(reader.name() == "nd") {
             qint64 nodeId = reader.attributes().value("ref").toLongLong();
             way.nodes.append(nodeId);
@@ -152,7 +171,7 @@ static void readWay(QXmlStreamReader &reader) {
     if(! isDriveableByCar)
         return;
 
-    ways[attrs.value("id").toLongLong()] = way;
+    highwayWays[attrs.value("id").toLongLong()] = way;
 }
 
 // Read and process <bounds minlat=".." maxlat=".." maxlon=".." minlon=".." />
@@ -171,8 +190,8 @@ static void readBounds(QXmlStreamReader &reader) {
     bounds.width = topLeft.distanceTo(topRight);
     bounds.height = topLeft.distanceTo(bottomLeft);
 
-    bounds.sectors_horizontal = bounds.width / SECTOR_WIDTH + 1;
-    bounds.sectors_vertical = bounds.height / SECTOR_HEIGHT + 1;
+    bounds.sectors_horizontal = int(bounds.width / SECTOR_WIDTH + 1);
+    bounds.sectors_vertical = int(bounds.height / SECTOR_HEIGHT + 1);
 
     reader.skipCurrentElement(); // <bounds /> never has anything inside
 }
@@ -202,7 +221,7 @@ static void readMap(QXmlStreamReader &reader) {
 static void removeNodesNotPresentInWays() {
     QSet<qint64> nodesInAHighway;
 
-    for(const Way &way : ways) {
+    for(const HighwayWay &way : highwayWays) {
         for(qint64 nodeId : way.nodes) {
             nodesInAHighway.insert(nodeId);
         }
@@ -244,7 +263,7 @@ static void addBorderNode(OutputWay *outputWay, Node node) {
 //    addBorderNode(right, moveNode(node, angle, -roadWidth));
 //}
 
-static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, OutputWay *left, OutputWay *right) {
+static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, OutputWay *left, OutputWay *middle, OutputWay *right) {
     double roadWidth = 4; // meters
 
     double roadFragmentCartesianAngle = qAtan2(a.x - b.x, a.y - b.y);
@@ -263,27 +282,47 @@ static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, Output
 
     Node backedUpA = moveNode(a, roadFragmentCartesianAngle, startDisplacement);
     Node backedUpB = moveNode(b, roadFragmentCartesianAngle + M_PI, endDisplacement);
-    Node halfway = nodeHalfwayAcross(a, b);
+    //Node halfway = nodeHalfwayAcross(a, b);
 
     bool startTurnsRight = angleOnStart < 0;
     bool endTurnsRight = angleOnEnd < 0;
 
     addBorderNode(right, moveNode(startTurnsRight ? backedUpA : a, perpendicularAngle, roadWidth));
-    addBorderNode(right, moveNode(halfway, perpendicularAngle, roadWidth));
+    //addBorderNode(right, moveNode(halfway, perpendicularAngle, roadWidth));
     addBorderNode(right, moveNode(endTurnsRight ? backedUpB : b, perpendicularAngle, roadWidth));
 
+    bool addFirst = true;
+    if(!middle->nodes.empty()) {
+        const Node lastNode = borderNodes.value(middle->nodes.last());
+        if(lastNode.fuzzyEqual(a))
+            addFirst = false;
+    }
+
+    if(addFirst)
+        addBorderNode(middle, a);
+    //addBorderNode(middle, halfway);
+    addBorderNode(middle, b);
+
     addBorderNode(left, moveNode(!startTurnsRight ? backedUpA : a, perpendicularAngle, -roadWidth));
-    addBorderNode(left, moveNode(halfway, perpendicularAngle, -roadWidth));
+    //addBorderNode(left, moveNode(halfway, perpendicularAngle, -roadWidth));
     addBorderNode(left, moveNode(!endTurnsRight ? backedUpB : b, perpendicularAngle, -roadWidth));
 }
 
 static void addNodesToHighway() {
-    for(qint64 wayId : ways.keys()) {
-        const Way &way = ways[wayId];
+    for(qint64 wayId : highwayWays.keys()) {
+        HighwayWay &way = highwayWays[wayId];
+
+        way.hardBorderWays.append(outputWays.length());
+        way.hardBorderWays.append(outputWays.length() + 1);
+
+        way.laneWays.append(outputWays.length() + 2);
 
         OutputWay *left = new OutputWay(wayId);
         OutputWay *right = new OutputWay(wayId);
-        outputWays << left << right;
+
+        OutputWay *middleLaneDivider = new OutputWay(wayId);
+
+        outputWays << left << middleLaneDivider << right;
 
         // iterate for every element but first
         for(int i = 1; i < way.nodes.length(); i++) {
@@ -298,7 +337,7 @@ static void addNodesToHighway() {
             if(i != way.nodes.length() - 1)
                 nextNode = &highwayNodes[way.nodes.value(i + 1)];
 
-            addBorderToTwoNodeWay(previousNode, firstNode, secondNode, nextNode, left, right);
+            addBorderToTwoNodeWay(previousNode, firstNode, secondNode, nextNode, left, middleLaneDivider, right);
         }
     }
 }
@@ -326,8 +365,8 @@ static void outputDataOSM(QFile &file) {
         out << "  <node id=\"" << key << "\" lat=\"" << node.x << "\" lon=\"" << node.y << "\" version=\"1\" />\n";
     }
 
-    for(auto key : ways.keys()) {
-        const Way &way = ways[key];
+    for(auto key : highwayWays.keys()) {
+        const HighwayWay &way = highwayWays[key];
         out << "  <way id=\"" << key << "\" version=\"1\">\n";
         out << "    <tag k=\"highway\" v=\"" << way.highwayType << "\" />\n";
         for(auto nodeId : way.nodes)
@@ -357,7 +396,7 @@ static void outputDataHACTS(QFile &file) {
 //    out << "width_sectors=" << bounds.sectors_horizontal << "\n";
 //    out << "height_sectors=" << bounds.sectors_vertical << "\n";
 //    out << "\n";
-    for(qint64 outputWayId = 0; outputWayId < outputWays.size(); ++outputWayId) {
+    for(int outputWayId = 0; outputWayId < outputWays.size(); ++outputWayId) {
         OutputWay const * const way = outputWays[outputWayId];
 
         if(way->nodes.empty())
@@ -383,6 +422,59 @@ static void outputDataHACTS(QFile &file) {
     }
 
     // output ways
+}
+
+void outputDataJSON(QFile &file) {
+    QJsonObject json;
+
+    QJsonArray roads;
+    for(const qint64 id : highwayWays.keys()) {
+        const HighwayWay &way = highwayWays[id];
+
+        QJsonObject road;
+        road["id"] = id;
+
+        QJsonArray hardborders;
+        for(const auto hb : way.hardBorderWays)
+            hardborders << hb;
+
+        road["hardborders"] = hardborders;
+
+        QJsonArray lanes;
+
+        QJsonObject lane1;
+        QJsonArray lane1borders;
+        lane1borders << way.hardBorderWays.first() << way.laneWays.first();
+        lane1["borders"] = lane1borders;
+
+        QJsonObject lane2;
+        QJsonArray lane2borders;
+        lane2borders << way.laneWays.first() << way.hardBorderWays.last();
+        lane2["borders"] = lane2borders;
+
+        lanes << lane1 << lane2;
+
+        road["lanes"] = lanes;
+
+        roads << road;
+    }
+    json["roads"] = roads;
+
+    QJsonArray ways;
+    for(const OutputWay *way : outputWays) {
+        QJsonArray arr;
+
+        for(qint64 nodeId : way->nodes) {
+            arr << borderNodes.value(nodeId).x;
+            arr << borderNodes.value(nodeId).y;
+        }
+
+        ways.append(arr);
+    }
+    json["ways"] = ways;
+
+    QJsonDocument doc(json);
+    file.write(doc.toJson());
 }
 
 int main(int argc, char *argv[]) {
@@ -433,7 +525,8 @@ int main(int argc, char *argv[]) {
         }
     }
     //outputDataOSM(output);
-    outputDataHACTS(output);
+    //outputDataHACTS(output);
+    outputDataJSON(output);
 
     if(output.error() != QFile::NoError) {
         cerr << "Failed writing to " << argv[2] << ": " << output.errorString() << "\n";

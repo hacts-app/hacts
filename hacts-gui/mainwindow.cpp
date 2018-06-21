@@ -13,6 +13,10 @@
 #include <QModelIndexList>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValueRef>
 
 #include "carshape.h"
 #include "cartreeitem.h"
@@ -184,14 +188,28 @@ void MainWindow::processLine(const QString &line)
     }
 }
 
+void MainWindow::drawLine(const QJsonArray &coords)
+{
+    for(int i = 2; i < coords.count(); i += 2) {
+        scene->addLine(coords[i-2].toDouble(), coords[i-1].toDouble(), coords[i].toDouble(), coords[i+1].toDouble());
+    }
+}
+
 void MainWindow::loadRoad()
 {
-    QFile file("./data.txt");
+    QFile file("./data.json");
     if(! file.open(QIODevice::ReadOnly)) {
         qWarning() << file.errorString();
         return;
     }
-    QTextStream stream(&file);
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    for(const QJsonValueRef line : doc["ways"].toArray()) {
+        drawLine(line.toArray());
+    }
+
+    /*
+    waQTextStream stream(&file);
     QString line;
     while(stream.readLineInto(&line)) {
         QStringList splitStr = line.split('\t');
@@ -200,6 +218,7 @@ void MainWindow::loadRoad()
             scene->addLine(coords[i-2].toDouble(), coords[i-1].toDouble(), coords[i].toDouble(), coords[i+1].toDouble());
         }
     }
+    */
 }
 
 void MainWindow::displayOptionsForCar(CarID id, const QString &name)
@@ -312,6 +331,7 @@ void MainWindow::send(const QByteArray &data)
     process->write(data);
     qDebug() << "sent" << data;
 }
+
 
 void MainWindow::on_zoomInButton_clicked()
 {
