@@ -264,7 +264,7 @@ static void addBorderNode(OutputWay *outputWay, Node node) {
 //}
 
 static void addBorderToTwoNodeWay(Node *prev, Node a, Node b, Node *next, OutputWay *left, OutputWay *middle, OutputWay *right) {
-    double roadWidth = 5; // meters
+    double roadWidth = 3; // meters
 
     double roadFragmentCartesianAngle = qAtan2(a.x - b.x, a.y - b.y);
     double perpendicularAngle = roadFragmentCartesianAngle + M_PI/2.0;
