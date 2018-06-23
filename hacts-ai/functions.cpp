@@ -166,7 +166,7 @@ void setRoads(string path)
             double x = doc["ways"][road["hardborders"][left].GetInt64()][i-1].GetDouble();
             double y = doc["ways"][road["hardborders"][left].GetInt64()][i].GetDouble();
 
-            tmp->loWay.points.push_back(Node{x, y});
+            tmp->leftWay.points.push_back(Node{x, y});
         }
 
         for(unsigned int i = 1; i < doc["ways"][road["hardborders"][right].GetInt64()].Size(); i += 2)
@@ -174,7 +174,7 @@ void setRoads(string path)
             double x = doc["ways"][road["hardborders"][right].GetInt64()][i-1].GetDouble();
             double y = doc["ways"][road["hardborders"][right].GetInt64()][i].GetDouble();
 
-            tmp->hiWay.points.push_back(Node{x, y});
+            tmp->rightWay.points.push_back(Node{x, y});
         }
         int k = 0;
         for(const auto &lane: road["lanes"].GetArray())

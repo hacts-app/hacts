@@ -122,9 +122,9 @@ vector<double> Car::radar()
         double minimum = 100;
 
         if(k == 0 )
-            ang = angle + 75;
+            ang = angle + 90;
         else if(k == 1)
-            ang = angle + 30;
+            ang = angle + 20;
         else if(k == 2)
             ang = angle + 5;
         else if(k == 3)
@@ -132,9 +132,9 @@ vector<double> Car::radar()
         else if(k == 4)
             ang = angle - 5;
         else if(k == 5)
-            ang = angle - 30;
+            ang = angle - 20;
         else
-            ang = angle - 75;
+            ang = angle - 90;
         for(Road* road: roads) // dla kazdej drogi na jakiej miesci sie samochod
         {
             for(Lane &lane: road->lanes) // zbadaj kazdy pas na tej drodze
@@ -206,6 +206,13 @@ vector<double> Car::radar()
         }
         result.push_back(minimum);
     }// for(k)
+    result[0] -= 0.5*width;
+    result[1] -= sqrt(0.5*width * 0.5*width + 0.5*length * 0.5*length);
+    result[2] -= 0.5*length;
+    result[3] -= 0.5*length;
+    result[4] -= 0.5*length;
+    result[5] -= sqrt(0.5*width * 0.5*width + 0.5*length * 0.5*length);
+    result[6] -= 0.5*width;
     return result;
 }
 

@@ -24,7 +24,8 @@ SOURCES += \
     car.cpp \
     rectangle.cpp \
     mapElements.cpp \
-    functions.cpp
+    functions.cpp \
+    gps.cpp
 
 HEADERS += \
     inputhandler.h \
@@ -32,6 +33,7 @@ HEADERS += \
     car.h \
     rectangle.h \
     mapElements.h \
-    functions.h
+    functions.h \
+    gps.h
 
 CONFIG += console

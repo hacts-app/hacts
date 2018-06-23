@@ -65,6 +65,8 @@ public:
     double getV() {return velocity;}
     double getWheelAng() {return wheelAng;}
     double getLen() {return length;}
+    double getX() {return x;}
+    double getY() {return y;}
 
     friend void movecar(const int id, const  double x, const  double y);
     friend void rotatecar(const int id, const double angle);

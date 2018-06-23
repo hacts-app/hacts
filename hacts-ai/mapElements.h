@@ -29,8 +29,8 @@ struct Lane
 struct Road
 {
     long long id;
-    Way loWay;
-    Way hiWay;
+    Way leftWay;
+    Way rightWay;
     vector<Lane> lanes;
     vector<Rectangle*> broken_cars;
 

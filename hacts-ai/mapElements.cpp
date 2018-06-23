@@ -8,7 +8,7 @@ void Road::crashes()
 
     for(unsigned int i = 0; i < cars.size(); i++) // wjazdy w sciany
     {
-        if(!cars[i]->onRoad(loWay) || !cars[i]->onRoad(hiWay))
+        if(!cars[i]->onRoad(leftWay) || !cars[i]->onRoad(rightWay))
         {
             list_of_destroyed.push_back(i);
         }
