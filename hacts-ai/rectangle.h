@@ -21,7 +21,7 @@ struct Rectangle
         corners = points;
     }
 
-    bool intersection(Node A, Node B);
+    bool intersection(Node A, Node B); // true jesli odcinek AB przecina prostokat
 
-    bool intersection(Rectangle *car);
+    bool intersection(Rectangle *car); // true jesli prostokaty maja punkt stycznosci
 };

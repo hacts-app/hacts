@@ -80,8 +80,19 @@ void newcar(const int id)
         if(id == car)
             return;
     }
-    cars.push_back(new Car(id, 1540, 350, 3.23, 0.315, 54, 0, 0, 0, 4.02, 1.7));
-    cars.back()->roads = all_roads;
+    cars.push_back(new Car(id, 4.02, 1.7));
+
+    cars.back()->set_mass(1540);
+
+    cars.back()->set_max_transfer(350);
+
+    cars.back()->set_torque(3.23);
+
+    cars.back()->set_radius(0.315);
+
+    cars.back()->set_max_velocity(54);
+
+    cars.back()->set_roads(all_roads);
 
     cars_id.push_back(id);
 
@@ -92,10 +103,10 @@ void movecar(const int id, const double x, const double y)
 {
     for(Car* car: cars)
     {
-        if(id == car->carId)
+        if(id == car->get_carId())
         {
-            car->x = x;
-            car->y = y;
+            car->set_x(x);
+            car->set_y(y);
             return;
         }
     }
@@ -105,9 +116,9 @@ void rotatecar(const int id, const double angle)
 {
     for(Car* car: cars)
     {
-        if(id == car->carId)
+        if(id == car->get_carId())
         {
-            car->angle = angle;
+            car->set_angle(angle);
             return;
         }
     }
@@ -117,11 +128,11 @@ void killcar(const int id)
 {
     for(unsigned int i = 0; i < cars.size(); i++)
     {
-        if(id == cars[i]->getId())
+        if(id == cars[i]->get_carId())
         {
-            for(Road* road: cars[i]->roads)
+            for(Road* road: cars[i]->get_roads())
             {
-                road->broken_cars.push_back(new Rectangle(cars[i]->car_borders->corners));
+                road->broken_cars.push_back(new Rectangle(cars[i]->get_car_borders()->corners));
 
                 cars.erase(cars.begin() + i, cars.begin() + i + 1);
             }
@@ -133,9 +144,9 @@ void setautopilot(int id, int _switch)
 {
     for(Car* car: cars)
     {
-        if(id == car->getId())
+        if(id == car->get_carId())
         {
-            car->set_auto(_switch);
+            car->set_auto_drive(_switch);
             return;
         }
     }

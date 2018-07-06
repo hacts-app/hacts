@@ -34,7 +34,7 @@ string path = "data.json";
 double vector_max(vector<double> vec)
 {
     sort(vec.begin(), vec.end());
-    return vec[vec.size()-1];
+    return vec.back();
 }
 
 void ai(Car* car, const double &delta)
@@ -56,12 +56,12 @@ void ai(Car* car, const double &delta)
         safety = min(radar[0]*3, radar[1]);
         car->quickChangeWheelAng(safety - 1.125); // --->    ang = a * safety + b
     }
-    else if(radar[2] > radar[3] && radar[2] > radar[4] && car->getWheelAng() < 5) // od tego miejsca szuka najlepszej drogi do jazdy
+    else if(radar[2] > radar[3] && radar[2] > radar[4] && car->get_wheelAng() < 5) // od tego miejsca szuka najlepszej drogi do jazdy
     {
         safety = min(radar[0]*3, radar[1]);
         car->smoothChangeWheelAng(0.5*safety - 0.5, delta); // <---
     }
-    else if(radar[4] > radar[3] && radar[4] > radar[2] && car->getWheelAng() > -5)
+    else if(radar[4] > radar[3] && radar[4] > radar[2] && car->get_wheelAng() > -5)
     {
         safety = min(radar[6]*3, radar[5]);
         car->smoothChangeWheelAng(-0.5*safety + 0.5, delta); // --->
@@ -72,7 +72,7 @@ void ai(Car* car, const double &delta)
         // predkosc ...  wzor v = 0.5*s - 1 ... zawsze stara sie dazyc do tej predkosci
     double maximum = vector_max({radar[2], radar[3], radar[4]});
 
-    if(car->getV() < 0.5*maximum - 1)
+    if(car->get_velocity() < 0.5*maximum - 1)
         car->onGasPush(0.8, delta);
     else
         car->onBrakePush(1, delta);
@@ -83,7 +83,7 @@ void player(Car* car, const double &delta)
 {
     for(auto &values: switches)
     {
-        if(car->getId() == values.first)
+        if(car->get_carId() == values.first)
         {
             if(values.second.first == 1)
                 car->onGasPush(1, delta);
@@ -117,7 +117,7 @@ int main()
 
         for(Car* car: cars)
         {
-            if(car->get_auto())
+            if(car->get_auto_drive())
                 ai(car, delta);
             else
                 player(car, delta);

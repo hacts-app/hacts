@@ -17,7 +17,7 @@ void Road::crashes()
     sort(list_of_destroyed.begin(), list_of_destroyed.end(), desc); // usuwanie od konca nie spowoduje
                                                                    // przesuniecia indexow w wektorze
     for(const int &x: list_of_destroyed) {
-        broken_cars.push_back(new Rectangle(cars[x]->car_borders->corners));
+        broken_cars.push_back(new Rectangle(cars[x]->get_car_borders()->corners));
             // gdy auto umiera zostaje po nim prostokat jako przeszkoda dla innych aut
 
         cars.erase(cars.begin() + x, cars.begin() + x + 1);
@@ -29,7 +29,7 @@ void Road::crashes()
     {
         for(unsigned int j = i + 1; j < cars.size(); j++)
         {
-            if(cars[i]->car_borders->intersection(cars[j]->car_borders)) // jesli nastapilo zderzenie
+            if(cars[i]->get_car_borders()->intersection(cars[j]->get_car_borders())) // jesli nastapilo zderzenie
             {
                 list_of_destroyed.push_back(i);
 
@@ -38,7 +38,7 @@ void Road::crashes()
         }
         for(Rectangle* rec: broken_cars) // zderzenia z autami trupami
         {
-            if(cars[i]->car_borders->intersection(rec))
+            if(cars[i]->get_car_borders()->intersection(rec))
             {
                 list_of_destroyed.push_back(i);
 
@@ -49,7 +49,7 @@ void Road::crashes()
     sort(list_of_destroyed.begin(), list_of_destroyed.end(), desc);
 
     for(const int &x: list_of_destroyed) {
-        broken_cars.push_back(new Rectangle(cars[x]->car_borders->corners));
+        broken_cars.push_back(new Rectangle(cars[x]->get_car_borders()->corners));
 
         cars.erase(cars.begin() + x, cars.begin() + x + 1);
     }

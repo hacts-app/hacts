@@ -43,6 +43,8 @@ bool circle_intersection_with_stretch(Node A, Node B, Node S, double r)
 
 pair<long long, int> whereAmI(Car* car)
 {
+    Node S {car->get_x(), car->get_y()};      // srodek kola czyli wspolrzedne samochodu
+
     for(unsigned int i = 0; i < all_roads.size(); i++)
     {
         double r = all_roads[i]->lanes.size() * 2.5; // szerokosc drogi
@@ -52,7 +54,6 @@ pair<long long, int> whereAmI(Car* car)
         {
             Node A = all_roads[i]->leftWay.points[j-1]; // A i B to dwa punkty ktore naleza do bandy drogi
             Node B = all_roads[i]->leftWay.points[j];
-            Node S {car->getX(), car->getY()};      // srodek kola czyli wspolrzedne samochodu
 
             if(circle_intersection_with_stretch(A, B, S, r))
             {
@@ -65,7 +66,6 @@ pair<long long, int> whereAmI(Car* car)
         {
             Node A = all_roads[i]->rightWay.points[j-1]; // A i B to dwa punkty ktore naleza do bandy drogi
             Node B = all_roads[i]->rightWay.points[j];
-            Node S {car->getX(), car->getY()};       // srodek kola czyli wspolrzedne samochodu
 
             if(circle_intersection_with_stretch(A, B, S, r))
             {
@@ -84,7 +84,6 @@ pair<long long, int> whereAmI(Car* car)
                 {
                     Node A = all_roads[i]->lanes[j].left_border.points[k-1]; // A i B to dwa punkty ktore naleza do bandy pasa
                     Node B = all_roads[i]->lanes[j].left_border.points[k];
-                    Node S {car->getX(), car->getY()};       // srodek kola czyli wspolrzedne samochodu
 
                     if(circle_intersection_with_stretch(A, B, S, r))
                     {
@@ -97,7 +96,6 @@ pair<long long, int> whereAmI(Car* car)
                 {
                     Node A = all_roads[i]->lanes[j].right_border.points[k-1]; // A i B to dwa punkty ktore naleza do bandy pasa
                     Node B = all_roads[i]->lanes[j].right_border.points[k];
-                    Node S {car->getX(), car->getY()};       // srodek kola czyli wspolrzedne samochodu
 
                     if(circle_intersection_with_stretch(A, B, S, r))
                     {
@@ -115,3 +113,9 @@ pair<long long, int> whereAmI(Car* car)
     }
     return {-1, 0}; // domyslnie funkcja zwraca takie wartosci, oznacza to ze nie gps nie znalazl przynaleznosci do zadej drogi
 }
+
+
+
+
+
+

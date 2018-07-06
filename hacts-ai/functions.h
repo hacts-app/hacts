@@ -19,6 +19,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 #include <fstream>
+#include <tuple>
 
 using namespace std;
 using namespace chrono;

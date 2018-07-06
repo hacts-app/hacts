@@ -13,6 +13,13 @@ struct Node
 {
     double x;
     double y;
+
+    bool compare(Node &other)
+    {
+        if(this->x == other.x && this->y == other.y)
+            return true;
+        return false;
+    }
 };
 
 struct Way

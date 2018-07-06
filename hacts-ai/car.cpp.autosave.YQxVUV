@@ -265,12 +265,12 @@ void Car::common_change_road()
     if(car_borders->intersection(A, B))
     {
         if(lanes[1]->left_border.points.front().compare(A) || lanes[1]->right_border.points.front().compare(A) ||
-           lanes[1]->left_border.points.back().compare(A)  || lanes[1]->right_border.points.back().compare(A))    // szukamy czy to na lane [2] wiechalo auto
+           lanes[1]->left_border.points.back().compare(A)  || lanes[1]->right_border.points.back().compare())    // szukamy czy to na lane [2] wiechalo auto
         {
              // lane[1] jest teraz lane 0, Road[1] jest Road[0] nr_lane nie zmienia sie
 
-          //  swap(roads[0], roads[num]);
-          //  swap(lanes[0], lanes[num]);
+            swap(roads[0], roads[num]);
+            swap(lanes[0], lanes[num]);
 
         }
 
@@ -312,7 +312,7 @@ unsigned int Car::get_lane_id() {
     return lane_id;
 }
 
-vector<Lane*> Car::get_lanes() {
+vector<Lane> Car::get_lanes() {
     return lanes;
 }
 
@@ -366,7 +366,7 @@ void Car::set_lane_id(unsigned int value) {
     lane_id = value;
 }
 
-void Car::set_lanes(vector<Lane*> pointers) {
+void Car::set_lanes(vector<Lane> pointers) {
     lanes = pointers;
 }
 
